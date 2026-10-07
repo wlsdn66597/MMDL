@@ -19,23 +19,24 @@
 | 실측 peak VRAM | 별도 계측하지 않음 |
 | 총 소요 시간 | 900문항별 경과 시간 합 49,513.468초(13.75시간). 엔진 초기화·저지를 포함한 종단간 시간은 별도 미계측 |
 | 의존성 | [requirements.txt](../requirements.txt), 실제 기준 환경의 패키지 버전 고정 |
+| 실행 커맨드 | 아래 명령에서 `BASELINE_CHECKPOINT`, `MMMU_MODEL_CACHE`, `MMMU_DATASET_CACHE`로 모델·저지·데이터 위치 지정 |
 
 vLLM을 사용해 공식 샘플링과 멀티모달 입력을 같은 백엔드에서 처리했다. 4090 메모리에 맞춰 context=64000, gpu_memory_utilization=0.90, max_num_seqs=1, max_num_batched_tokens=4096, enforce_eager=true를 사용한다. CUDA graph 프로파일링 메모리를 줄이고 한 문항씩 실행한다. 실제 최대 이미지 5장으로 상한을 설정하며 공식 일반 상한 10과 다르다.
 
 ```bash
-# 최초 준비: 가상환경·고정 패키지·모델·데이터
-python3.12 src/prepare.py --model-cache /path/to/model-cache --dataset-cache /path/to/dataset-cache
+# 준비된 캐시 위치에 맞게 변경
+MMMU_MODEL_CACHE=/path/to/hf-model-cache
+MMMU_DATASET_CACHE=/path/to/mmmu-dataset-cache
+# 지정 revision의 공식 모델 snapshot (양자화·학습 모델 사용 금지)
+BASELINE_CHECKPOINT="${MMMU_MODEL_CACHE}/models--Qwen--Qwen3-VL-4B-Instruct/snapshots/ebb281ec70b05090aa6165b016eac8ec08e71b17"
 
 # 전체 평가: 추론 → 파서 → 필요한 저지 → 최종 표
 .venv/bin/python src/evaluate.py --config src/config.json --run-name baseline \
-  --model-cache /path/to/model-cache --dataset-cache /path/to/dataset-cache
-
-# 학습 후 같은 평가, 병합된 BF16 체크포인트만 변경
-.venv/bin/python src/evaluate.py --config src/config.json --run-name finetuned \
-  --checkpoint /path/to/merged-bf16-checkpoint
+  --checkpoint "$BASELINE_CHECKPOINT" \
+  --model-cache "$MMMU_MODEL_CACHE" --dataset-cache "$MMMU_DATASET_CACHE"
 ```
 
-캐시는 표준 Hugging Face 방식으로 재사용한다. 코드에 사용자 서버 절대 경로를 고정하지 않는다. 추론·저지 프로세스를 순차 실행해 평가 모델이 해제된 후 저지 모델을 올린다. 같은 설정으로 재개할 때 완료된 응답을 재생성하지 않는다. 코드·설정·체크포인트·원문이 다른 실행의 혼용을 거부한다.
+`BASELINE_CHECKPOINT`는 모델·processor·tokenizer를 포함한 지정 revision의 실제 snapshot 디렉터리다. `MMMU_MODEL_CACHE`는 공식 모델과 저지 모델의 표준 Hugging Face 캐시 루트, `MMMU_DATASET_CACHE`는 지정 revision의 30과목 데이터 캐시 위치다. 가상환경·모델·데이터 준비 및 사용 옵션은 [README](../README.md)에 안내한다.
 
 ## 2. 프롬프트
 
