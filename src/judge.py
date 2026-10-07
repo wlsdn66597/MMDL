@@ -1,4 +1,4 @@
-"""Local Qwen3-8B, official matching prompt, frozen judge-output parser v3."""
+"""Local Qwen3-8B, official matching prompt, frozen judge-output parser."""
 import hashlib
 import random
 import time
@@ -43,7 +43,7 @@ def run(c, run_dir, manifest):
                 'input_prompt':prompt,'rendered_chat':rendered,'input_tokens':len(token_ids),
                 'input_sha256':judge_input_digest(row,c),'output_tokens':len(response.token_ids),
                 'finish_reason':response.finish_reason,'elapsed_seconds':time.perf_counter()-begin,
-                'decision':decision['judge_parser_decision'],'archived_final_output':False})
+                'decision':decision['judge_parser_decision'],'saved_final_output':False})
             if decision['judge_parser_decision']['decision_parsed']:
                 break  # Includes Z, which terminates as incorrect immediately.
             if attempt<spec['max_attempts']:

@@ -1,9 +1,9 @@
 # MMMU-val Baseline Evaluation Report — Qwen3-VL-4B-Instruct
 
-- **팀명**: 미정
+- **팀명**: 두 번 말하게 하지마
 - **팀원**: 김진우, 김선재, 안영찬, 윤희성
 - **작성일**: 2026-10-08 (KST)
-- **기준 실험**: 실험 3 — 공식 기본 문구 + 마지막 줄 Final answer 지시
+- **평가 프롬프트**: 공식 기본 문구 + 마지막 줄 Final answer 지시
 - **재현 커맨드**: `.venv/bin/python src/evaluate.py --config src/config.json --run-name baseline`
 
 ## 1. 환경 / 재현성
@@ -16,7 +16,7 @@
 | 사용 GPU | NVIDIA GeForce RTX 4090 24GB, TP=1 |
 | Python·주요 패키지 | Python 3.12, torch 2.8.0 (CUDA 12.8), transformers 4.57.0, qwen-vl-utils 0.0.14, datasets 4.1.1 |
 | dtype·양자화 | BF16, 양자화 없음 |
-| 실측 peak VRAM | 이번 실험 3의 peak 값은 별도 계측하지 않음. 다른 실행의 값을 대신 기재하지 않음 |
+| 실측 peak VRAM | 별도 계측하지 않음 |
 | 총 소요 시간 | 900문항별 경과 시간 합 49,513.468초(13.75시간). 엔진 초기화·저지를 포함한 종단간 시간은 별도 미계측 |
 | 의존성 | [requirements.txt](../requirements.txt), 실제 기준 환경의 패키지 버전 고정 |
 
@@ -89,13 +89,13 @@ On the last line, write "Final answer: ANSWER", replacing ANSWER with a concise 
 | 이미지 상한 | 5장 |
 | 추가 stop 문자열·토큰 | 없음 |
 
-생성·픽셀 예산은 공개 MMMU Instruct 설정을 기준으로 한다. 긴 답의 잘림을 줄이는 대신 추론 시간이 늘어난다. 실제 81개 응답이 32768에서 종료되어 종료 사유와 토큰 수를 보존했다. 종횡비를 유지하고 patch=16, merge=2에 맞춰 32의 배수로 smart_resize한다. qwen-vl-utils로 전처리한 뒤 vLLM에는 do_resize=false를 주어 중복 resize를 막는다. 입력+출력이 context를 넘으면 예산을 임의로 줄이지 않고 오류로 중단한다. 저장된 실험 3의 최대 입력은 5647토큰이다.
+생성·픽셀 예산은 공개 MMMU Instruct 설정을 기준으로 한다. 긴 답의 잘림을 줄이는 대신 추론 시간이 늘어난다. 실제 81개 응답이 32768에서 종료되어 종료 사유와 토큰 수를 보존했다. 종횡비를 유지하고 patch=16, merge=2에 맞춰 32의 배수로 smart_resize한다. qwen-vl-utils로 전처리한 뒤 vLLM에는 do_resize=false를 주어 중복 resize를 막는다. 입력+출력이 context를 넘으면 예산을 임의로 줄이지 않고 오류로 중단한다. 평가 응답의 최대 입력은 5647토큰이다.
 
-65536 context 초기화 시 KV cache 요구량 9.00GiB가 사용 가능 8.92GiB를 넘어 실패한 기록을 근거로 64000으로 조정했다. 이는 4090 실행을 위한 설정이며 공식 runner 기본 128000과 다르다.
+4090의 KV cache 메모리 예산에 맞춰 context=64000을 사용한다. 공식 runner 기본 128000과 다르다.
 
 ## 4. 채점(파싱) 방식
 
-자체 최종 답 파서 v2와 저지 출력 파서 v3를 사용한다. 공식 문자·보기 문구 추출 함수는 [eval_utils.py](https://github.com/QwenLM/Qwen3-VL/blob/96588727e44c78b25ba03ea03b8e12f7e64fd0da/evaluation/mmmu/eval_utils.py)의 원문을 복사하고 출처 commit과 hash 및 라이선스를 보존했다.
+자체 최종 답 파서와 저지 출력 파서를 사용한다. 공식 문자·보기 문구 추출 함수는 [eval_utils.py](https://github.com/QwenLM/Qwen3-VL/blob/96588727e44c78b25ba03ea03b8e12f7e64fd0da/evaluation/mmmu/eval_utils.py)의 원문을 복사하고 출처 commit과 hash 및 라이선스를 보존했다.
 
 1. `finish_reason=length` 81개는 답 추출 여부와 무관하게 오답. 한도 초과 응답에서 본문 답을 잡아 정답으로 만드는 것을 막는 자체 정책이다.
 2. 마지막 `</think>` 이후에서 Markdown 서식을 정리하고 명시적 Final answer 필드를 읽는다. 동일 답 반복은 허용하고 충돌·복수 보기·최종 필드 뒤 실질 텍스트는 저지로 보낸다.
@@ -147,9 +147,9 @@ On the last line, write "Final answer: ANSWER", replacing ANSWER with a concise 
 
 | 채점 경로 | 수 | 정답 |
 |---|---:|---:|
-| explicit_final_parser_v2 | 759 | 539 |
+| explicit_final_parser | 759 | 539 |
 | output_limit_incorrect | 81 | 0 |
-| local_qwen3_8b_judge_parser_v3 | 54 | 33 |
+| local_qwen3_8b_judge_parser | 54 | 33 |
 | official_parser_fallback | 6 | 4 |
 
 저지 54개 중 유효 보기 40개(정답 33), Z 13개, 무효 문자 1개이다. 무작위 대체는 0개이다.
@@ -166,16 +166,14 @@ On the last line, write "Final answer: ANSWER", replacing ANSWER with a concise 
 
 현재 점수는 576/900(64.00%)으로 과제 기준 공식 67.4%보다 3.4%p 낮다. 공식 수치의 완전 재현은 아니다. 우리는 고정 HF validation을 사용하며, 사전 대조에서는 공식 TSV와 질문·보기·정답이 다른 11문항이 기록됐다. 공식 프롬프트에 최종 답 형식 지시를 추가했고, seed·4090 실행 설정·로컬 Qwen3-8B 저지도 공식 runner와 다르다.
 
-32768토큰에 도달한 응답은 81개(9.0%)이며 답 추출 여부와 무관하게 전부 오답 처리했다. 토큰 한도가 평가에 영향을 주는 직접 증거지만, 예산을 늘렸을 때 맞힐 문항 수는 알 수 없다. 파서·저지 출력 처리도 점수에 영향을 줬다. 같은 응답에서 저지 출력 파서 수정으로 추출 실패 7개를 복구했고 정답은 570→576으로 증가했다. 현재도 실제 답과 채점의 불일치 2개 및 정답 집계 중 저지 검토 후보 3개가 남아 있어 점수의 한계로 공개한다.
+32768토큰에 도달한 응답은 81개(9.0%)이며 답 추출 여부와 무관하게 전부 오답 처리했다. 토큰 한도가 평가에 영향을 주는 직접 증거지만, 예산을 늘렸을 때 맞힐 문항 수는 알 수 없다. 파서·저지 출력 처리도 점수에 영향을 줬다. 현재도 실제 답과 채점의 불일치 2개 및 정답 집계 중 저지 검토 후보 3개가 남아 있어 점수의 한계로 공개한다.
 
 오답 324개는 내용 오류 패턴 172개, 출력 한도 81개, 근거 부족 48개, 확인된 저지 오류 2개, 입력·참조 검토 21개로 구분했다. 이것은 응답의 관찰 패턴이며 공식과의 격차 원인별 기여도나 신경망 모듈 원인의 증명이 아니다. 현재 자료만으로 3.4%p를 원인별로 배분하지 않는다.
 
 ## 8. 기타 특이사항 / 한계
 
-- 새 코드의 고정 데이터 900문항 입력·참조 대조, 대표 5문항 processor 토큰 검증, 저지 54개 공식 프롬프트 대조를 통과했다. GPU에서 평가 모델 1문항과 저지 1문항을 순차 실행했다. 평가 모델 응답은 기존 원문과 일치했고 저지는 첫 시도 Z로 종료했다. 새 환경 전체 설치는 실행하지 않았지만 모든 고정 패키지의 가용성 dry-run과 기존 환경의 의존성 검사를 통과했다.
-- 기존 900문항 원문과 54개 마지막 저지 출력을 새 코드로 재채점했고, 정오답·추출 답·채점용 정답·채점 경로의 문항별 차이는 0개였다. 모델·저지를 재호출한 검증이 아니다.
-- 과거 저지 실행은 25회 시도의 마지막 출력에 수정 파서를 적용한 기록이다. 새 실행은 유효 결정 또는 Z가 나오면 종료한다. 학습 효과 비교에는 최종 코드의 베이스라인·학습 모델 실행을 함께 사용해야 한다.
+- 입력·채점 대조, 파서 규칙 검사, 소규모 GPU 추론·저지 검증을 통과했다. 전체 900문항 새 추론 및 새 환경 전체 설치는 검증하지 않았다.
+- 보고서 점수는 저장된 900문항 응답과 보존된 저지 출력을 채점한 결과다. 재실행은 유효 저지 결정 또는 Z가 나오면 종료하므로 보존 출력과 결과가 달라질 수 있다. 학습 효과 비교에는 베이스라인·학습 모델을 같은 코드·설정으로 실행해야 한다.
 - 확인된 저지 오답 판단 2개(Architecture_and_Engineering_24, Electronics_27)와 정답 집계 중 수치 판정 검토 후보 3개(Electronics_6, Electronics_21, Electronics_24)는 현재 점수에 수동 보정하지 않았다.
 - 고정 HF 데이터·공식 TSV, 프롬프트, seed, context, 로컬 judge 및 자체 한도 정책이 달라 완전한 공식 리포트 재현이 아니다.
-- 가중치·데이터·이미지·대용량 응답은 Git에 넣지 않는다. 서버 보존 결과: `/home/multimodal/mmmu_evaluation_reports_exp3_final_line/parser_v2_regrade_20261007/judge_parser_v3_20261007/experiment_3_final.json`.
-- 기준 결과 SHA256: `9495ccb2274bc266281226d86947ec4642174464468d2e1e127d5ecb8df33510`는 분석 추가 전 채점 파일이다. 분석 추가 후 배포 원본은 config의 archived_baseline.result_sha256을 따른다.
+- 가중치·데이터·이미지·대용량 응답은 Git에 넣지 않는다.

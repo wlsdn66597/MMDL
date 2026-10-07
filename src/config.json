@@ -107,8 +107,8 @@
     }
   },
   "scoring": {
-    "target_parser_version": "terminal-final-field-first-v2",
-    "judge_parser_version": "judge-terminal-decision-v3",
+    "target_parser_version": "terminal-final-field-first",
+    "judge_parser_version": "judge-terminal-decision",
     "length_policy": "all_incorrect",
     "random_fallback": false,
     "Z_policy": "incorrect_stop_retry",
@@ -144,11 +144,5 @@
       "eval_instruct.sh": "03c75ea0b37712a8e62e71ce282ccbe5cde2e866d43fc01465eb1919d1f93087"
     },
     "copied_rule_functions_sha256": "9bcd71522b503b484f21b71c5d4f6ebfa2b13ab2dc18be8ed9e4439bcfbd9d5f"
-  },
-  "archived_baseline": {
-    "total": 900,
-    "correct": 576,
-    "accuracy_percent": 64.0,
-    "result_sha256": "d61db9749e2b55f5623d67b8957d6d1c2d95d8a27b3549e462a35022129890ba"
   }
 }

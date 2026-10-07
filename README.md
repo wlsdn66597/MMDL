@@ -1,6 +1,6 @@
 # Qwen3-VL-4B MMMU 평가
 
-실험 3을 기준으로 고정한 평가 파이프라인입니다. 준비 후 명령 하나로 900문항 추론, 최종 답 파서, 공식 규칙 fallback, 로컬 Qwen3-8B 저지, 최종 JSON 및 30과목 점수 표까지 실행합니다. 제출 보고서는 [reports/mmmu_baseline.md](reports/mmmu_baseline.md)에 있습니다.
+Qwen3-VL-4B-Instruct의 MMMU validation 베이스라인 평가 파이프라인입니다. 준비 후 명령 하나로 900문항 추론, 최종 답 파서, 공식 규칙 fallback, 로컬 Qwen3-8B 저지, 최종 JSON 및 30과목 점수 표까지 실행합니다. 제출 보고서는 [reports/mmmu_baseline.md](reports/mmmu_baseline.md)에 있습니다.
 
 ## 준비
 
@@ -54,10 +54,10 @@ python3.12 src/prepare.py --model-cache /path/to/model-cache --dataset-cache /pa
 ## 확정한 채점
 
 1. `finish_reason=length`인 응답은 전부 오답으로 처리합니다.
-2. 최종 답 필드 파서 v2로 추출합니다. 모호하거나 충돌하는 최종 필드는 저지로 보냅니다.
+2. 최종 답 필드 파서로 추출합니다. 모호하거나 충돌하는 최종 필드는 저지로 보냅니다.
 3. 최종 답 필드가 없을 때만 공식 Qwen 규칙 파서를 전체 응답에 적용합니다.
 4. 남은 응답은 Qwen3-8B로 공식 문항·보기·응답 매칭 프롬프트를 사용해 판정합니다. 저지에는 이미지를 주지 않습니다.
-5. 저지 출력 파서 v3가 마지막 결정 또는 공식 fallback을 읽습니다. `Z`는 오답으로 즉시 종료합니다. 유효하지 않은 결과는 최대 25회까지 시도하고 최종 실패는 오답입니다. 무작위 대체와 수동 정답 보정은 없습니다.
+5. 저지 출력 파서가 마지막 결정 또는 공식 fallback을 읽습니다. `Z`는 오답으로 즉시 종료합니다. 유효하지 않은 결과는 최대 25회까지 시도하고 최종 실패는 오답입니다. 무작위 대체와 수동 정답 보정은 없습니다.
 
 주관식은 공식 구현을 따라 **채점에서만** A=참조 답, B=Other Answers로 변환합니다. 이 과정의 공식 문자 GT 처리 특례와 문자열 매칭을 유지합니다. 숫자 허용오차는 추가하지 않았습니다. 공식 규칙의 원문 함수는 `src/parsers.py`, 실제 프롬프트 전문과 출처 commit/hash는 `src/config.json`에 있습니다. 공식 코드 라이선스는 `THIRD_PARTY_LICENSES.txt`에 보존합니다.
 
@@ -76,22 +76,22 @@ python3.12 src/prepare.py --model-cache /path/to/model-cache --dataset-cache /pa
 
 이미지를 별도 파일로 저장하지 않고 고정 MMMU 데이터에서 직접 읽습니다. 각 문항의 `id`, `dataset_config`, `dataset_index`, `image_fields`로 원본 이미지를 찾습니다. 가중치·데이터·이미지·대용량 응답은 저장소에 포함하지 않습니다.
 
-## 검증 및 기존 결과 재현
+## 검증 및 저장 응답 채점
 
 ```bash
-# GPU·패키지 설치 없이 파서의 실제 실패 사례를 검증
+# GPU 없이 파서 규칙 확인
 python src/evaluate.py --selfcheck
 
-# 기존 900개 원문과 마지막 저지 출력으로 채점을 재현 (GPU/API 호출 없음)
-python src/evaluate.py --config src/config.json --run-name archived-baseline \
-  --import-results /path/to/experiment_3_final.json
+# 보존된 응답과 저지 출력으로 채점 (GPU/API 호출 없음)
+python src/evaluate.py --config src/config.json --run-name saved-baseline \
+  --import-results /path/to/baseline_results.json
 ```
 
-저장된 실험 3 결과의 900문항을 재채점해 **576/900, 64.00%**를 재현했고, 문항별 정오답·추출 답·채점용 정답·채점 경로의 차이는 0개였습니다. 최종 답 파서 759개, 공식 fallback 6개, 출력 한도 81개, 저지 54개입니다. 원본 JSON은 서버에 보존되어 있으며 Git에 올리지 않습니다. 서버 원본 위치와 hash는 제출 보고서에 기록합니다.
+저장 응답 900문항의 채점 결과는 **576/900, 64.00%**입니다. 전체 입력·채점 대조와 소규모 GPU 추론·저지 검증을 통과했습니다. 전체 900문항 새 추론 및 새 환경 전체 설치 검증은 수행하지 않았습니다.
 
-이 검증은 저장 응답 재채점입니다. 새 코드로 900문항 전체를 새로 추론한 결과라고 표시하지 않습니다. 과거 저지는 25회 시도의 마지막 출력에 v3를 적용했지만, 새 실행은 v3 규칙으로 유효 결정 또는 Z가 나오면 종료합니다. 학습 효과를 비교할 때는 최종 코드로 베이스라인과 학습 모델을 모두 같은 절차로 실행하십시오. 동일 seed라도 하드웨어·라이브러리 차이에 따라 생성 결과가 달라질 수 있습니다.
+보고서 점수는 저장 응답과 보존된 저지 출력을 채점한 결과입니다. 재실행은 유효 저지 결정 또는 Z가 나오면 종료하므로 보존 출력과 결과가 달라질 수 있습니다. 학습 효과를 비교할 때는 베이스라인과 학습 모델을 모두 같은 코드·설정으로 실행하십시오. 동일 seed라도 하드웨어·라이브러리 차이에 따라 생성 결과가 달라질 수 있습니다.
 
-추가 검증: 서버의 고정 데이터로 900문항 질문·보기·정답·프롬프트가 기존 기록과 일치함을 확인했습니다. 이미지 5장 문항을 포함한 대표 5문항에서 chat template와 실제 processor 입력 토큰 길이가 일치했습니다. 54개 저지 프롬프트도 공식 함수와 일치했습니다. GPU smoke에서는 평가 모델 1문항의 응답 원문이 기존 기록과 동일했고, 별도 프로세스의 저지 1문항은 첫 시도에 Z로 정상 종료했습니다. 준비 스크립트의 환경 검사, 패키지 가용성 dry-run, 설치 환경의 의존성 검사도 통과했습니다.
+`--import-results` 입력은 `settings`에 모델·데이터 revision, sampling, vision 설정을, `records`에 문항·입력 프롬프트·응답·최종 채점을 포함해야 합니다. 저지가 필요한 문항은 `grading.local_qwen3_8b_judge`에 `attempt_count`와 `final_raw_output`을 포함해야 합니다. 입력 프롬프트와 설정 일치를 검증하며 문항·입력·응답에 필요한 필드만 가져옵니다.
 
 ## 파일 구성
 

@@ -1,4 +1,4 @@
-"""Frozen scoring: official rule excerpts + target parser v2 + judge parser v3.
+"""Frozen scoring: official rule excerpts + target final-answer parser + judge-output parser.
 
 Official functions copied verbatim from QwenLM/Qwen3-VL, commit
 96588727e44c78b25ba03ea03b8e12f7e64fd0da, evaluation/mmmu/eval_utils.py.
@@ -9,8 +9,8 @@ import copy
 import re
 import string
 
-TARGET_VERSION = 'terminal-final-field-first-v2'
-JUDGE_VERSION = VERSION = 'judge-terminal-decision-v3'
+TARGET_VERSION = 'terminal-final-field-first'
+JUDGE_VERSION = VERSION = 'judge-terminal-decision'
 
 def can_infer_option(answer, choices):
     """Rule-based extraction of answer option."""
@@ -221,7 +221,7 @@ def grade_response(row):
     result['final_field'] = field
     if field['status'] == 'extracted':
         answer = field['answer'] if row['question_type']=='multiple-choice' else can_infer(field['payload'], copy.deepcopy(choices))
-        method = 'explicit_final_parser_v2'
+        method = 'explicit_final_parser'
         reason = 'explicit_final_answer_priority' if answer else 'open_final_answer_official_match_failed'
     elif field['status'] == 'absent':
         processed = str(response['raw']).split('</think>')[-1].strip()
@@ -243,7 +243,7 @@ def grade_judge(row, raw):
     hit = int(decision['valid_option_extracted'] and decision['answer'] == gold)
     return {'status':'graded', 'correct':bool(hit), 'hit':hit,
         'grading_gold':gold, 'extracted_answer':decision['answer'],
-        'method':'local_qwen3_8b_judge_parser_v3', 'reason':decision['status'],
+        'method':'local_qwen3_8b_judge_parser', 'reason':decision['status'],
         'judge_parser_decision':decision, 'random_fallback':False,
         'token_limit_forced_incorrect':False,
         'extraction_failure_forced_incorrect':not decision['decision_parsed']}

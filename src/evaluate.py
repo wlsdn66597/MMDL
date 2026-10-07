@@ -177,31 +177,32 @@ def infer(args, c, run_dir, manifest):
         done.add(r['id'])
 
 
-def import_archive(path, run_dir, c):
-    archive = prepare.read(path)
-    if archive['settings']['model']['revision'] != c['model']['revision'] or archive['settings']['dataset']['revision'] != c['dataset']['revision']:
-        raise RuntimeError('Archive revision mismatch.')
-    if any(archive['settings']['sampling'][k]!=v for k,v in c['sampling'].items()) or archive['settings']['sampling']['max_new_tokens']!=c['max_new_tokens']:
-        raise RuntimeError('Archive sampling mismatch.')
-    if any(archive['settings']['vision'][k]!=v for k,v in c['vision'].items()):
-        raise RuntimeError('Archive vision budget mismatch.')
-    if archive['experiment']['prompt_suffixes'] != c['prompts']['suffixes']:
-        raise RuntimeError('Archive prompt mismatch.')
-    records = archive['records']
+def import_saved_results(path, run_dir, c):
+    saved_results = prepare.read(path)
+    if saved_results['settings']['model']['revision'] != c['model']['revision'] or saved_results['settings']['dataset']['revision'] != c['dataset']['revision']:
+        raise RuntimeError('Saved results revision mismatch.')
+    if any(saved_results['settings']['sampling'][k]!=v for k,v in c['sampling'].items()) or saved_results['settings']['sampling']['max_new_tokens']!=c['max_new_tokens']:
+        raise RuntimeError('Saved results sampling mismatch.')
+    if any(saved_results['settings']['vision'][k]!=v for k,v in c['vision'].items()):
+        raise RuntimeError('Saved results vision budget mismatch.')
+    records = saved_results['records']
     check_records(records,c)
     for r in records:
         hint = None
         if r['input_prompt'].startswith('Hint: '):
             hint = r['input_prompt'].split('\nQuestion: ',1)[0][6:]
         if prompt_for(dict(r,hint=hint),c) != r['input_prompt']:
-            raise RuntimeError(f'Archive input prompt differs: {r["id"]}')
+            raise RuntimeError(f'Saved results input prompt differs: {r["id"]}')
     prediction_path = run_dir/'predictions.jsonl'
     existing = prepare.read_jsonl(prediction_path)
     if len(existing)>900 or any(a['id']!=b['id'] or a['model_response']!=b['model_response'] for a,b in zip(existing,records)):
         raise RuntimeError('Run already contains different responses.')
+    prediction_fields = ('id','subject','dataset_config','dataset_index','image_fields',
+        'original_image_sizes_wh','question_type','question','options','reference_answer',
+        'input_prompt','rendered_chat','model_response')
     for r in records[len(existing):]:
-        prepare.append(prediction_path,{k:copy.deepcopy(v) for k,v in r.items() if k not in ('grading','error_analysis')})
-    # These are saved historical final judge outputs, not newly generated decisions.
+        prepare.append(prediction_path,{k:copy.deepcopy(r[k]) for k in prediction_fields})
+    # Imported judge decisions must remain distinguishable from new model calls.
     existing_judges = prepare.read_jsonl(run_dir/'judge_attempts.jsonl')
     source_sha = prepare.digest(path)
     saved_ids = {a['id'] for a in existing_judges}
@@ -211,9 +212,9 @@ def import_archive(path, run_dir, c):
             if j is None:
                 raise RuntimeError(f'Missing saved judge output: {r["id"]}')
             prepare.append(run_dir/'judge_attempts.jsonl',{'id':r['id'],'attempt':j['attempt_count'],
-                'raw':j['final_raw_output'],'archived_final_output':True,
+                'raw':j['final_raw_output'],'saved_final_output':True,
                 'input_sha256':judge_input_digest(r,c),'source_sha256':source_sha})
-    return archive
+    return saved_results
 
 
 def judge_prompt(row,c):
@@ -255,7 +256,7 @@ def summaries(records,c):
         'accuracy':macro,'accuracy_percent':macro*100,'aggregation':'unweighted mean of 30 subject accuracies',
         'by_subject':subjects,'method_counts':dict(Counter(r['grading']['final']['method'] for r in records)),
         'length_limit_incorrect':sum(r['model_response']['finish_reason']=='length' for r in records),
-        'judge_count':sum(r['grading']['final']['method']=='local_qwen3_8b_judge_parser_v3' for r in records),
+        'judge_count':sum(r['grading']['final']['method']=='local_qwen3_8b_judge_parser' for r in records),
         'judge_states':dict(Counter(r['grading']['final'].get('judge_parser_decision',{}).get('status') for r in records if 'judge_parser_decision' in r['grading']['final'])),
         'random_fallback':0,'exact_official_report_reproduction':False}
 
@@ -268,7 +269,7 @@ def main():
     p.add_argument('--model-cache'); p.add_argument('--dataset-cache')
     p.add_argument('--output-root',default=str(ROOT/'outputs'))
     p.add_argument('--selfcheck',action='store_true')
-    p.add_argument('--import-results',help='Replay a preserved experiment_3_final.json without model inference.')
+    p.add_argument('--import-results',help='Score preserved baseline_results.json responses without model inference.')
     p.add_argument('--_stage',choices=['infer','judge'],help=argparse.SUPPRESS)
     args = p.parse_args()
     c = prepare.config(args.config)
@@ -278,7 +279,7 @@ def main():
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*',args.run_name):
         p.error('run-name must be a simple directory name.')
     if args.import_results and args.checkpoint:
-        p.error('Archive replay cannot be combined with a different checkpoint.')
+        p.error('Saved results replay cannot be combined with a different checkpoint.')
     run_dir = Path(args.output_root).expanduser().resolve()/args.run_name
     run_dir.mkdir(parents=True,exist_ok=True)
     lock_handle = run_lock(run_dir/'.run.lock') if not args._stage else None
@@ -297,7 +298,7 @@ def main():
     manifest_path = run_dir/'manifest.json'
     if manifest_path.exists():
         manifest = prepare.read(manifest_path)
-        if manifest['fingerprint'] != signature or manifest['mode'] != ('archive_replay' if args.import_results else 'inference'):
+        if manifest['fingerprint'] != signature or manifest['mode'] != ('saved_response_scoring' if args.import_results else 'inference'):
             raise RuntimeError('Existing run has different code/config/checkpoint/mode; choose a new run-name.')
         manifest['cache_paths'] = paths
         prepare.write(manifest_path,manifest)
@@ -308,15 +309,15 @@ def main():
             commit = None
         manifest = {'created_at':prepare.now(),'fingerprint':signature,'configuration':c,'code_sha256':code,
             'git_commit':commit,'model_identity':identity,'cache_paths':paths,
-            'mode':'archive_replay' if args.import_results else 'inference',
+            'mode':'saved_response_scoring' if args.import_results else 'inference',
             'environment':{'python':sys.version,'platform':platform.platform()} if args.import_results else prepare.runtime_check(c)}
         if args.import_results:
             manifest['imported_source_sha256'] = prepare.digest(args.import_results)
         prepare.write(manifest_path,manifest)
     if args.import_results:
         if prepare.digest(args.import_results)!=manifest['imported_source_sha256']:
-            raise RuntimeError('Archive changed since this run began.')
-        archive = import_archive(Path(args.import_results),run_dir,c)
+            raise RuntimeError('Saved results changed since this run began.')
+        saved_results = import_saved_results(Path(args.import_results),run_dir,c)
     else:
         command = [sys.executable,str(Path(__file__).resolve()),'--config',str(Path(args.config).resolve()),
             '--run-name',args.run_name,'--output-root',str(run_dir.parent), '--model-cache',paths['model'], '--dataset-cache',paths['dataset']]
@@ -332,13 +333,13 @@ def main():
         r['grading'] = {'final':parsers.grade_response(r)}
         if r['grading']['final']['status']=='pending_judge':
             a = last.get(r['id'])
-            if a and (a.get('archived_final_output') or parsers.grade_judge(r,a['raw'])['judge_parser_decision']['decision_parsed'] or a['attempt']>=c['judge']['max_attempts']):
+            if a and (a.get('saved_final_output') or parsers.grade_judge(r,a['raw'])['judge_parser_decision']['decision_parsed'] or a['attempt']>=c['judge']['max_attempts']):
                 r['grading']['final'] = parsers.grade_judge(r,a['raw'])
             else:
                 pending.append(r['id'])
     if pending:
         if args.import_results:
-            raise RuntimeError('Archive replay is missing terminal judge outputs; no model is called.')
+            raise RuntimeError('Saved results replay is missing terminal judge outputs; no model is called.')
         prepare.write(run_dir/'pending_judge.json',pending)
         subprocess.run(command+['--_stage','judge'],check=True)
         last = saved_judges(records,prepare.read_jsonl(run_dir/'judge_attempts.jsonl'),c)
@@ -347,11 +348,16 @@ def main():
                 r['grading']['final'] = parsers.grade_judge(r,last[r['id']]['raw'])
     summary = summaries(records,c)
     if args.import_results:
-        original = {r['id']:r['grading']['final'] for r in archive['records']}
-        differences = [r['id'] for r in records if any(r['grading']['final'][k]!=original[r['id']][k] for k in ('hit','extracted_answer','grading_gold','method'))]
+        original = {r['id']:r['grading']['final'] for r in saved_results['records']}
+        def normalized_grade(grade):
+            result = {key:grade[key] for key in ('hit','extracted_answer','grading_gold','method')}
+            # Ignore naming-only version suffixes in imported grading metadata.
+            result['method'] = re.sub(r'_v[0-9]+$', '', result['method'])
+            return result
+        differences = [r['id'] for r in records if normalized_grade(r['grading']['final'])!=normalized_grade(original[r['id']])]
         if differences:
-            raise RuntimeError(f'Replay differs from archive: {differences}')
-        summary['archive_grade_mismatches'] = 0
+            raise RuntimeError(f'Grading differs from saved results: {differences}')
+        summary['saved_grade_mismatches'] = 0
         summary['model_calls'] = summary['judge_calls'] = 0
     prepare.write(run_dir/'results.json',{'schema_version':'mmmu-frozen-evaluation-v1','created_at':prepare.now(),
         'manifest':manifest,'summary':summary,'records':records})
