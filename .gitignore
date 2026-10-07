@@ -1,0 +1,11 @@
+.venv/
+outputs/
+.cache/
+__pycache__/
+*.py[cod]
+.env
+*.safetensors
+*.bin
+*.gguf
+*.pt
+*.pth
