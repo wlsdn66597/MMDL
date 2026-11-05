@@ -1,0 +1,11 @@
+# Install the CUDA 12.8 build of torch and torchvision first (see README).
+torch==2.8.0
+torchvision==0.23.0
+transformers==4.57.0
+tokenizers==0.22.2
+peft==0.17.1
+accelerate==1.10.1
+qwen-vl-utils==0.0.14
+huggingface-hub==0.36.2
+Pillow==11.3.0
+safetensors==0.8.0

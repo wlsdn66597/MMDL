@@ -1,0 +1,7 @@
+data/
+runs/
+cache/
+references/
+.venv/
+configs/*.local.json
+__pycache__/
