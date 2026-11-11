@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "experiment_id": "era-decoder-lora-pilot-20261030-v1",
+  "model": {
+    "repo": "Qwen/Qwen3-VL-4B-Instruct",
+    "revision": "ebb281ec70b05090aa6165b016eac8ec08e71b17",
+    "local_path": "/home/rlatjswo/mmdl-cache/huggingface/hub/models--Qwen--Qwen3-VL-4B-Instruct/snapshots/ebb281ec70b05090aa6165b016eac8ec08e71b17"
+  },
+  "dataset": {
+    "root": "../data/pilot200",
+    "plain_jsonl": "exports/train_plain.jsonl",
+    "era_jsonl": "exports/train_era.jsonl",
+    "validation_status": "validation_status.json",
+    "expected_items": 200
+  },
+  "lora": {"r": 16, "alpha": 32, "dropout": 0.05},
+  "training": {
+    "output_root": "../runs/train",
+    "seed": 3407,
+    "data_seed": 3407,
+    "epochs": 2,
+    "micro_batch_size": 1,
+    "gradient_accumulation_steps": 16,
+    "learning_rate": 0.0001,
+    "weight_decay": 0.01,
+    "warmup_ratio": 0.03,
+    "lr_scheduler_type": "cosine",
+    "max_grad_norm": 1.0,
+    "gradient_checkpointing": true,
+    "attn_implementation": "sdpa",
+    "min_pixels": 1003520,
+    "max_pixels": 4014080,
+    "max_seq_length": 8192,
+    "dataloader_num_workers": 0
+  },
+  "evaluation": {
+    "python": "/home/rlatjswo/mmdl_test/.venv/bin/python",
+    "model_cache": "/home/rlatjswo/mmdl-cache/huggingface/hub",
+    "dataset_cache": "/home/rlatjswo/mmdl-cache/huggingface/datasets",
+    "source_dir": "../baseline",
+    "protocol_dir": "../baseline/protocol",
+    "source_manifest": "../baseline/source_manifest.json",
+    "output_root": "../runs/evaluation",
+    "seeds": [3407, 42, 123, 2026, 9876],
+    "checkpoints": {
+      "plain": "../runs/train/plain/merged",
+      "era": "../runs/train/era/merged"
+    },
+    "baseline_runs": {
+      "3407": "/home/rlatjswo/mmmu_baseline_20261009/baseline_seed3407",
+      "42": "/home/rlatjswo/mmmu_visual_tokens_seed42_20261010/baseline_seed42",
+      "123": "/home/rlatjswo/mmmu_multiseed_20261011/baseline_seed123",
+      "2026": "/home/rlatjswo/mmmu_multiseed_20261011/baseline_seed2026",
+      "9876": "/home/rlatjswo/mmmu_multiseed_20261011/baseline_seed9876"
+    }
+  }
+}
