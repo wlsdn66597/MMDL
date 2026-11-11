@@ -1,0 +1,434 @@
+{
+  "created_at": "2026-09-23T03:51:11.824264+00:00",
+  "identity": {
+    "tool_version": "1.0.0",
+    "script_sha256": "5677e27c29b54b0310b8c4e23d285499d339f4fa0ee8c9734ea1d12933462b21",
+    "data_manifest_sha256": "bd09e6e42430bb14896b0540d55a6b0581585ba8891939dfce92c4b3bfbfe509",
+    "ids": [
+      "validation_Accounting_13",
+      "validation_Accounting_17",
+      "validation_Accounting_30",
+      "validation_Agriculture_12",
+      "validation_Agriculture_17",
+      "validation_Agriculture_19",
+      "validation_Architecture_and_Engineering_2",
+      "validation_Architecture_and_Engineering_18",
+      "validation_Architecture_and_Engineering_23",
+      "validation_Art_13",
+      "validation_Art_17",
+      "validation_Art_29",
+      "validation_Art_Theory_2",
+      "validation_Art_Theory_24",
+      "validation_Art_Theory_28",
+      "validation_Basic_Medical_Science_17",
+      "validation_Basic_Medical_Science_19",
+      "validation_Basic_Medical_Science_20",
+      "validation_Biology_7",
+      "validation_Biology_10",
+      "validation_Biology_21",
+      "validation_Chemistry_6",
+      "validation_Chemistry_21",
+      "validation_Chemistry_26",
+      "validation_Clinical_Medicine_13",
+      "validation_Clinical_Medicine_21",
+      "validation_Clinical_Medicine_30",
+      "validation_Computer_Science_4",
+      "validation_Computer_Science_6",
+      "validation_Computer_Science_29",
+      "validation_Design_10",
+      "validation_Design_16",
+      "validation_Design_19",
+      "validation_Diagnostics_and_Laboratory_Medicine_4",
+      "validation_Diagnostics_and_Laboratory_Medicine_6",
+      "validation_Diagnostics_and_Laboratory_Medicine_27",
+      "validation_Economics_23",
+      "validation_Economics_29",
+      "validation_Economics_30",
+      "validation_Electronics_7",
+      "validation_Electronics_8",
+      "validation_Electronics_24",
+      "validation_Energy_and_Power_13",
+      "validation_Energy_and_Power_17",
+      "validation_Energy_and_Power_30",
+      "validation_Finance_1",
+      "validation_Finance_13",
+      "validation_Finance_17",
+      "validation_Geography_5",
+      "validation_Geography_7",
+      "validation_Geography_15",
+      "validation_History_7",
+      "validation_History_12",
+      "validation_History_30",
+      "validation_Literature_4",
+      "validation_Literature_5",
+      "validation_Literature_26",
+      "validation_Manage_13",
+      "validation_Manage_23",
+      "validation_Manage_27",
+      "validation_Marketing_1",
+      "validation_Marketing_3",
+      "validation_Marketing_14",
+      "validation_Materials_1",
+      "validation_Materials_15",
+      "validation_Materials_21",
+      "validation_Math_3",
+      "validation_Math_4",
+      "validation_Math_18",
+      "validation_Mechanical_Engineering_1",
+      "validation_Mechanical_Engineering_22",
+      "validation_Mechanical_Engineering_28",
+      "validation_Music_21",
+      "validation_Music_24",
+      "validation_Music_30",
+      "validation_Pharmacy_8",
+      "validation_Pharmacy_16",
+      "validation_Pharmacy_26",
+      "validation_Physics_14",
+      "validation_Physics_18",
+      "validation_Physics_28",
+      "validation_Psychology_19",
+      "validation_Psychology_24",
+      "validation_Psychology_27",
+      "validation_Public_Health_4",
+      "validation_Public_Health_12",
+      "validation_Public_Health_25",
+      "validation_Sociology_1",
+      "validation_Sociology_4",
+      "validation_Sociology_5"
+    ],
+    "sampling": {
+      "max_tokens": 2048,
+      "temperature": 0.7,
+      "top_p": 0.8,
+      "top_k": 20,
+      "repetition_penalty": 1.0,
+      "presence_penalty": 1.5,
+      "seed": 3407
+    },
+    "prompt_version": "B1_answer_only_precision_v1",
+    "server_settings": {
+      "dtype": "bfloat16",
+      "max_model_len": 9048,
+      "gpu_memory_utilization": 0.9,
+      "max_num_seqs": 1,
+      "limit_mm_per_prompt": {
+        "image": 5,
+        "video": 0
+      },
+      "min_pixels": 1003520,
+      "max_pixels": 4014080,
+      "mm_processor_cache_gb": 0,
+      "safetensors_load_strategy": "eager",
+      "enforce_eager": true,
+      "seed": 3407,
+      "load_format": "auto",
+      "generation_config": "vllm"
+    },
+    "model_hashes": {
+      "chat_template.json": {
+        "sha256": "6f8a6a55027e3da5160105556cda5dd69f6423f1c32645f6730d32de7773d0c4",
+        "bytes": 5502
+      },
+      "config.json": {
+        "sha256": "edac7703329133edfc53e46ac0081835144c99d7eebf28b71c732694d435224d",
+        "bytes": 1505
+      },
+      "generation_config.json": {
+        "sha256": "8469742d1fce0de951c8909b26a2c0c0d8490837ce476efb114da9e0cefc4d44",
+        "bytes": 269
+      },
+      "merges.txt": {
+        "sha256": "599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3",
+        "bytes": 1671839
+      },
+      "model-00001-of-00002.safetensors": {
+        "sha256": "30a01a0556622645a3cce87b655bbbbbc1f170c196099f1b666c93202c3339a9",
+        "bytes": 4967229296
+      },
+      "model-00002-of-00002.safetensors": {
+        "sha256": "046296a2a387efb43b0c997d5833c789604d168834f6e0d3064bf7bb13d002a6",
+        "bytes": 3908490048
+      },
+      "model.safetensors.index.json": {
+        "sha256": "58a7841d7bff2548dd91577d216274a83cf1b500bc6a534b809d6c1b1707cf2b",
+        "bytes": 64742
+      },
+      "preprocessor_config.json": {
+        "sha256": "27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516",
+        "bytes": 390
+      },
+      "tokenizer.json": {
+        "sha256": "a5d85b6dcc535e6b93115a9ef287e6132fdbf30270da6218194ba742261173c7",
+        "bytes": 7032403
+      },
+      "tokenizer_config.json": {
+        "sha256": "c2da771801886ad9ae98181793ffd3dfb7f1af30f6f7c6a4e15d7dbba52e2399",
+        "bytes": 10868
+      },
+      "video_preprocessor_config.json": {
+        "sha256": "7768af27c1fafa9cc9011c1dc20067e03f8915e03b63504550e11d5066986d13",
+        "bytes": 385
+      },
+      "vocab.json": {
+        "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+        "bytes": 2776833
+      }
+    },
+    "server_vllm_version": "0.30.0",
+    "torch_version": "2.13.0+cu132",
+    "transformers_version": "5.17.0",
+    "sampler_override": null,
+    "parser_seed": 42,
+    "parser_order": "subject then numeric ID",
+    "client_concurrency": 1
+  },
+  "data_manifest": {
+    "schema": 1,
+    "tool_version": "1.0.0",
+    "prepared_at": "2026-09-22T15:47:47.318183+00:00",
+    "dataset": "MMMU/MMMU",
+    "dataset_revision": "98e6ac0cb9b7b2cd2c991b85a50762edc4aedc68",
+    "split": "validation",
+    "samples_sha256": "e2b2759eb5ea1e0a728fe27c120490ea3afdbcba372a96e0c13e360b9deeb32c",
+    "source_parquet_files": [
+      {
+        "filename": "Accounting/validation-00000-of-00001.parquet",
+        "sha256": "f1bedfc8ad70d24f8c1daa50a309d9b3b88ea14caea60299b648c69049fa870f"
+      },
+      {
+        "filename": "Agriculture/validation-00000-of-00001.parquet",
+        "sha256": "f95765c549ebaeedd89c14bfe39d1deefcb9ec6b8b082f5945ffc547f2c4e20c"
+      },
+      {
+        "filename": "Architecture_and_Engineering/validation-00000-of-00001.parquet",
+        "sha256": "09792c72c949565ba9378366562818d9687eba5b4f6fc3e84482a8862cf4dd9c"
+      },
+      {
+        "filename": "Art/validation-00000-of-00001.parquet",
+        "sha256": "d86be1080d7a33a76e9b98f0df0d7ebacbd37b1c29927bbf592489cc4b996c57"
+      },
+      {
+        "filename": "Art_Theory/validation-00000-of-00001.parquet",
+        "sha256": "ba4e709ace78695df3b2ed8859e7cfb36e3cd9c60abd5a0fade9800653b695d6"
+      },
+      {
+        "filename": "Basic_Medical_Science/validation-00000-of-00001.parquet",
+        "sha256": "577102f6f742471a947a82579df0ffa8b7bfd1b10dc2eadbf90f9ea5ff0cddd4"
+      },
+      {
+        "filename": "Biology/validation-00000-of-00001.parquet",
+        "sha256": "644e5b10eb90689a0e41a7c738526113551f59ab5e66c44a870e6bca52d39e08"
+      },
+      {
+        "filename": "Chemistry/validation-00000-of-00001.parquet",
+        "sha256": "ff62af1b99c6f60d2b2228bf438152d9e44c06e42455d5eb5e229954aa95b00b"
+      },
+      {
+        "filename": "Clinical_Medicine/validation-00000-of-00001.parquet",
+        "sha256": "2c3d29a6c838e279974731ea92fa459e15107f9213970a9a4f9312c1f102bd58"
+      },
+      {
+        "filename": "Computer_Science/validation-00000-of-00001.parquet",
+        "sha256": "73c8ef8ba23a050b85c524363614801cdc73db36ad7a7348643006766da037f5"
+      },
+      {
+        "filename": "Design/validation-00000-of-00001.parquet",
+        "sha256": "c69b48ecde9ad80bb8b530dec4da99ae051b17f90abefd2b98230313580c5b7f"
+      },
+      {
+        "filename": "Diagnostics_and_Laboratory_Medicine/validation-00000-of-00001.parquet",
+        "sha256": "cefb7363510a05284dd8a0b12cb7cc7f20843c65d6b7101eefe3929d4061a592"
+      },
+      {
+        "filename": "Economics/validation-00000-of-00001.parquet",
+        "sha256": "1a6b0ef6edf3eb76f2fae37cbff28d6723eec4bd94d4b3d6e676aa4ea924d95b"
+      },
+      {
+        "filename": "Electronics/validation-00000-of-00001.parquet",
+        "sha256": "558d6970c95c9961c63da8b1ebd7a885524059a83838fa67e6be8c6522a536ba"
+      },
+      {
+        "filename": "Energy_and_Power/validation-00000-of-00001.parquet",
+        "sha256": "46f8d320be746b990145c4e2bf6b88fc493f0e8e322759ee2a9e2fcc8ee404b5"
+      },
+      {
+        "filename": "Finance/validation-00000-of-00001.parquet",
+        "sha256": "194f838578ac4fe08c0784b833bfbd89087a0bd2e83dc02c89e7d4e9d5b6d326"
+      },
+      {
+        "filename": "Geography/validation-00000-of-00001.parquet",
+        "sha256": "536505f8dc6199713effcd7cf9b8ae2da2325e51ec17d0fcfabc75956965701c"
+      },
+      {
+        "filename": "History/validation-00000-of-00001.parquet",
+        "sha256": "fe6ba5fa13133d43afbd63abfe75b49ac45c5de566ac896fbc370cb1492c8f82"
+      },
+      {
+        "filename": "Literature/validation-00000-of-00001.parquet",
+        "sha256": "3ad02815b3af320c574b254c7a2134f31288a360c0168035ee051c8946cb8b1b"
+      },
+      {
+        "filename": "Manage/validation-00000-of-00001.parquet",
+        "sha256": "838ecee5c3c9708b3fb70e414b83bfee35725814290908a853b24d06bbd832fe"
+      },
+      {
+        "filename": "Marketing/validation-00000-of-00001.parquet",
+        "sha256": "0b4854d8a509e8e0f401255d5788fd83e489e4d5d5207826856dcffa1157feb2"
+      },
+      {
+        "filename": "Materials/validation-00000-of-00001.parquet",
+        "sha256": "6881364f70c6911f0610005ad5aaf10f4394a7f578ead566e528b574da534e54"
+      },
+      {
+        "filename": "Math/validation-00000-of-00001.parquet",
+        "sha256": "ebe73665a3b1db2bfd33ae67a00efcf86b6d817463a12d995e30716d69aae8e7"
+      },
+      {
+        "filename": "Mechanical_Engineering/validation-00000-of-00001.parquet",
+        "sha256": "8381e04c04dc8e0b3a21404e251a1fc2deb52d3f5b2485e5e8bc99e4907d21d7"
+      },
+      {
+        "filename": "Music/validation-00000-of-00001.parquet",
+        "sha256": "132f8e3965276788f1b5388c39565d5475b8eb61af3142522be446e9a131af8f"
+      },
+      {
+        "filename": "Pharmacy/validation-00000-of-00001.parquet",
+        "sha256": "93bc3de041d8f69b9e7cd29886ad68f26ac5b11bdf221cabb5f84b8b8d8ca6a9"
+      },
+      {
+        "filename": "Physics/validation-00000-of-00001.parquet",
+        "sha256": "649a7c85ae9f1aa0762059eca0c082e3862f669f07a1283c36ada31def2c391d"
+      },
+      {
+        "filename": "Psychology/validation-00000-of-00001.parquet",
+        "sha256": "16101fe448e07ce654d95b5ef5793988fb6e7f5fe42b94575c33c9ffbd4ad919"
+      },
+      {
+        "filename": "Public_Health/validation-00000-of-00001.parquet",
+        "sha256": "c8525f7af4a47ffd3c2959816147911203782c8e1116267f4e6e54026ef0f923"
+      },
+      {
+        "filename": "Sociology/validation-00000-of-00001.parquet",
+        "sha256": "a38e31036b6cfb6df82c069f2715b8df0158969405e86a08c1732c334638ac32"
+      }
+    ],
+    "official_scorer": {
+      "repository": "https://github.com/MMMU-Benchmark/MMMU.git",
+      "commit": "268471d0d488258990025331c7528359c324aa25",
+      "sha256": {
+        "eval_utils.py": "cc1a89b4a27f697702d340bc6a7578b5237135754ddaa9ef105239a3d9847367",
+        "data_utils.py": "b64ab451e5bdf4aff275e442d8cd195269cbe7b63678f0e95fed8eb59fa05cdd",
+        "LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+      },
+      "retrieved_at": "2026-09-22T15:42:47.800491+00:00",
+      "modified": false
+    },
+    "image_encoding": "PIL RGB to lossless PNG; no resizing",
+    "audit": {
+      "samples": 900,
+      "question_types": {
+        "multiple-choice": 847,
+        "open": 53
+      },
+      "images_per_sample": {
+        "1": 857,
+        "2": 24,
+        "3": 5,
+        "4": 8,
+        "5": 6
+      },
+      "image_items_per_request": {
+        "1": 857,
+        "2": 23,
+        "3": 5,
+        "4": 8,
+        "5": 7
+      },
+      "max_request_images": 5,
+      "samples_with_unreferenced_images": [
+        "validation_Agriculture_26",
+        "validation_Materials_15",
+        "validation_Pharmacy_4",
+        "validation_Pharmacy_22"
+      ]
+    }
+  },
+  "server_record": {
+    "created_at": "2026-09-22T15:49:17.144823+00:00",
+    "model_path": "/home/rlatjswo/models/Qwen3-VL-4B-Instruct",
+    "served_model_name": "Qwen/Qwen3-VL-4B-Instruct",
+    "settings": {
+      "dtype": "bfloat16",
+      "max_model_len": 9048,
+      "gpu_memory_utilization": 0.9,
+      "max_num_seqs": 1,
+      "limit_mm_per_prompt": {
+        "image": 5,
+        "video": 0
+      },
+      "min_pixels": 1003520,
+      "max_pixels": 4014080,
+      "mm_processor_cache_gb": 0,
+      "safetensors_load_strategy": "eager",
+      "enforce_eager": true,
+      "seed": 3407,
+      "load_format": "auto",
+      "generation_config": "vllm"
+    },
+    "model_hashes": {
+      "chat_template.json": {
+        "sha256": "6f8a6a55027e3da5160105556cda5dd69f6423f1c32645f6730d32de7773d0c4",
+        "bytes": 5502
+      },
+      "config.json": {
+        "sha256": "edac7703329133edfc53e46ac0081835144c99d7eebf28b71c732694d435224d",
+        "bytes": 1505
+      },
+      "generation_config.json": {
+        "sha256": "8469742d1fce0de951c8909b26a2c0c0d8490837ce476efb114da9e0cefc4d44",
+        "bytes": 269
+      },
+      "merges.txt": {
+        "sha256": "599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3",
+        "bytes": 1671839
+      },
+      "model-00001-of-00002.safetensors": {
+        "sha256": "30a01a0556622645a3cce87b655bbbbbc1f170c196099f1b666c93202c3339a9",
+        "bytes": 4967229296
+      },
+      "model-00002-of-00002.safetensors": {
+        "sha256": "046296a2a387efb43b0c997d5833c789604d168834f6e0d3064bf7bb13d002a6",
+        "bytes": 3908490048
+      },
+      "model.safetensors.index.json": {
+        "sha256": "58a7841d7bff2548dd91577d216274a83cf1b500bc6a534b809d6c1b1707cf2b",
+        "bytes": 64742
+      },
+      "preprocessor_config.json": {
+        "sha256": "27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516",
+        "bytes": 390
+      },
+      "tokenizer.json": {
+        "sha256": "a5d85b6dcc535e6b93115a9ef287e6132fdbf30270da6218194ba742261173c7",
+        "bytes": 7032403
+      },
+      "tokenizer_config.json": {
+        "sha256": "c2da771801886ad9ae98181793ffd3dfb7f1af30f6f7c6a4e15d7dbba52e2399",
+        "bytes": 10868
+      },
+      "video_preprocessor_config.json": {
+        "sha256": "7768af27c1fafa9cc9011c1dc20067e03f8915e03b63504550e11d5066986d13",
+        "bytes": 385
+      },
+      "vocab.json": {
+        "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+        "bytes": 2776833
+      }
+    },
+    "vllm_version": "0.30.0",
+    "torch_version": "2.13.0+cu132",
+    "transformers_version": "5.17.0",
+    "sampler_override": null,
+    "cuda_home": "/usr/local/cuda-13.2"
+  }
+}

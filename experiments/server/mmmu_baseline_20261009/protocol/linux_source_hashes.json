@@ -1,0 +1,11 @@
+{
+  "normalization": "Windows CRLF to Linux LF only; original source hash verified before normalization",
+  "sha256": {
+    "src/config.json": "b55e958623cd59e3da64aef4e228a98e83e586d924b80a8b3fd22dafd7c938e5",
+    "src/evaluate.py": "2dbc17e8953cbdf1ea1091e2890489c7f0592efe21e5d56a13bf1b61b642e75d",
+    "src/parsers.py": "5023ed38d2e8af91304b258d5b3798ffc03df24324f49740953d943378a30b04",
+    "src/judge.py": "443a28c9cbfdd90fa6f6c5021a557dc97d58df3bed7967318ec972b773e3c0fb",
+    "src/prepare.py": "581b4c2905fbd71f77c3e5f6f23a13c4444a125609a3c9b3ac4bfbe267f476ef",
+    "requirements.txt": "c14074d81b0c9e821d40a2453951ccc6016ce2393f1572434d9530a4909f6910"
+  }
+}

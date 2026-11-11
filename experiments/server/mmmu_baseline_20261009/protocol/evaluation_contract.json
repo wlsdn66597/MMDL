@@ -1,0 +1,90 @@
+{
+  "protocol_id": "mmmu-local-v1",
+  "prepared_date": "2026-10-09",
+  "status": "prepared_not_executed",
+  "inference_seeds": [
+    3407,
+    42,
+    123,
+    2026,
+    9876
+  ],
+  "judge_seed": 3407,
+  "baseline_runs": 5,
+  "candidate_runs_per_checkpoint": 5,
+  "records_per_run": 900,
+  "source_project": "C:/project/mmdl_test",
+  "source_sha256": {
+    "src/config.json": "086f672d994023879d0255d6979dcc0fc79c916716dbf7e97e55c15e960669de",
+    "src/evaluate.py": "e09c6e5b42f0cfa7be23cd07961b49c0e19903e83a79fcd8e99cc354d9dedc7d",
+    "src/parsers.py": "1edcd0299b9884ec0cc9b9eee3e408498ac5b18571bf1956f3800de281e6ecca",
+    "src/judge.py": "09b9db60d6a06eb3d7bdda16f70fa533e84766187b9d5c8f0a53e93c384dd5a4",
+    "src/prepare.py": "4149a60746b01436a3ccefd5a1d0d8ffec86f3d6ceee0b0a8c955f67044e8d6a",
+    "requirements.txt": "1857ace6696b4dadea73667caab622f1d1c844680b009a56c2ba4fb141993676",
+    "baseline_results.json": "6709106710faf1faeee39efcc973fdde586dafb73ed49f752c99b2c13b1dfcb4",
+    "mmmu_baseline_brief.pdf": "5c24c3547156f2869e8a05d0f1f2f33e331d9aa02ace6cd2199dedfcc05f5893"
+  },
+  "config_sha256": {
+    "config.seed3407.json": "086f672d994023879d0255d6979dcc0fc79c916716dbf7e97e55c15e960669de",
+    "config.seed42.json": "b6888f8d9671267fe6da5764ab15cb7f0428cccc4fa6c2613d545685fd98a68f",
+    "config.seed123.json": "10a31260abe4d1d559a56455819e727fe94174a0be6e33cde7a1c96b1deb2146",
+    "config.seed2026.json": "670403545e57dd7988f5d5f6ad1c2bfa643a0cadd9d709295b5aa6bbf874d2e7",
+    "config.seed9876.json": "57f6ff22b3281dda2bf23ebe554f8352e4c1199af38dee176f5cf85ae4ac29d7"
+  },
+  "evaluation_items_sha256": "13b00a2003f30e017df49c57f92781b97781f23c5fb578c808f59fc29e3bd612",
+  "historical_result": {
+    "seed": 3407,
+    "correct": 576,
+    "total": 900,
+    "accuracy_percent": 64.0,
+    "length_count": 81,
+    "use": "historical_reference_only_not_new_multiseed_mean"
+  },
+  "comparison": {
+    "changed_between_model_arms": "target_model_checkpoint",
+    "changed_between_repetitions": "sampling.seed (engine and requests)",
+    "judge_fixed": true,
+    "primary_metric": "mean paired accuracy difference in percentage points",
+    "seed_sd_ddof": 1,
+    "confidence_interval": "optional approximate paired t interval over seed differences, conditional on fixed 900 items; not population generalization",
+    "training_seed_variation_tested": false
+  },
+  "known_gaps": [
+    "Legacy JSON is incompatible with current --import-results schema and route names.",
+    "Legacy judge records preserve final output only; current retry policy cannot be reconstructed from them.",
+    "Current judge code does not force judge finish_reason=length to incorrect; target-model length rule does.",
+    "Actual model artifacts, image bytes, GPU driver and execution environment must be frozen on the evaluation machine."
+  ],
+  "new_campaign_environment": {
+    "VLLM_ENABLE_V1_MULTIPROCESSING": "0"
+  },
+  "new_campaign_environment_note": "New repeatability condition; historical setting unknown. Requires preflight on the Linux GPU host.",
+  "execution_plan": {
+    "same_seed_check": {
+      "seed": 3407,
+      "records_per_run": 900,
+      "independent_runs_per_model": 2,
+      "models": 2,
+      "runs_total": 4,
+      "first_run_included_in_primary_evaluation": true,
+      "second_run_diagnostic_only": true,
+      "reuse_saved_responses_between_repeats": false,
+      "pass_check": "Exact agreement of saved input, response text, token counts, termination, final grading and judge attempt records; timestamps and timing excluded. Not a proof of bitwise equality of all GPU computations."
+    },
+    "remaining_seeds": [
+      42,
+      123,
+      2026,
+      9876
+    ],
+    "remaining_new_runs": 8,
+    "primary_runs_total": 10,
+    "diagnostic_only_runs_total": 2,
+    "total_fresh_runs": 12,
+    "total_target_responses": 10800,
+    "primary_target_responses": 9000,
+    "runs_per_additional_candidate_if_baseline_reused": 6,
+    "judge_calls": "Variable; only parser-unresolved records, max 25 attempts each.",
+    "on_reproducibility_mismatch": "Stop before remaining seeds; investigate and establish conditions. Do not cherry-pick matching runs."
+  }
+}
