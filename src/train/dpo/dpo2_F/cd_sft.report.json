@@ -1,0 +1,11 @@
+{
+ "rows": 3040,
+ "questions": 1608,
+ "by_vic_type": {
+  "I": 942,
+  "V": 730,
+  "C": 1368
+ },
+ "dropped_over_6144_tokens": 72,
+ "rows_before_length_filter": 3112
+}

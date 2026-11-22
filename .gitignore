@@ -1,11 +1,11 @@
 .venv/
+outputs/
+.cache/
 __pycache__/
 *.py[cod]
 .env
-*.log
 *.safetensors
+*.bin
+*.gguf
 *.pt
 *.pth
-*.ckpt
-
-*.egg-info/
