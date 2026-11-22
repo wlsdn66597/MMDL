@@ -18,7 +18,7 @@
 
 | 평가 | 문항 수 | 기본 모델 | ERA SFT | DPO2-E 재현 | DPO2F-CD | 상세 결과 |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| MMMU validation | 900 | 64.00% | 57.56% (5 epoch) | 66.89% | 66.11% | [SFT epoch별 결과](reports/mmmu.md) · [DPO 학습 seed별 결과](reports/dpo2/README.md) |
+| MMMU validation | 900 | 64.00% | 57.56% (5 epoch) | 67.48% | 66.11% | [SFT epoch별 결과](reports/mmmu.md) · [DPO 학습 seed별 결과](reports/dpo2/README.md) |
 | MMMU Test | 10,500 | 61.61% | — | 65.89% | 65.04% | [Test 비교](reports/mmmu_test/comparison.md) |
 | MMMU-Pro 표준 10지선다 Test | 1,730 | 52.60% | — | 54.68% | — | [Pro 비교](reports/mmmu_pro_std10/comparison.md) |
 
