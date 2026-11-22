@@ -1,6 +1,6 @@
 # DPO2-E / DPO2-F 결과 (MMMU validation 900문항)
 
-평가: 이 레포 `src/evaluate.py` + `src/config.json` (평가 프롬프트·설정 고정, seed 3407, 출력 상한 32,768). 베이스라인 576/900 (64.00%), 출력 상한 도달 81.
+평가: 이 레포 `src/eval/mmmu_validation/evaluate.py` + `src/eval/mmmu_validation/config.json` (평가 프롬프트·설정 고정, seed 3407, 출력 상한 32,768). 베이스라인 576/900 (64.00%), 출력 상한 도달 81.
 
 | 실행 | 정답 | 정확도 | 고친 문항 | 새로 틀린 문항 | 상한 도달 | ERA 형식 답 | McNemar p (vs 베이스라인) |
 |---|---:|---:|---:|---:|---:|---:|---:|

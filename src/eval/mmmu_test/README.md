@@ -2,7 +2,7 @@
 
 **MMMU Test 10,500문항**에서 기본 모델과 DPO2-E·DPO2F-CD 같은 병합 모델을 같은 코드로 평가한다. 같은 조건으로 비교할 때는 생성 seed `3407`을 명시한다. 저장된 점수는 [모델 비교 보고서](../../../reports/mmmu_test/comparison.md)에 있다.
 
-현재 서버에서 사용한 생성·채점 코드와 `run_eval_dpo2e.sh`를 원본 바이트 그대로 보존했다. 설치, 파일 검증, 실행 기록, 완료 검증만 바깥에 추가했다. 저장소의 `src/evaluate.py`는 기존 **validation 900문항** 평가이므로 이번 Test 실행에는 사용하지 않는다.
+현재 서버에서 사용한 생성·채점 코드와 `run_eval_dpo2e.sh`를 원본 바이트 그대로 보존했다. 설치, 파일 검증, 실행 기록, 완료 검증만 바깥에 추가했다. 저장소의 `src/eval/mmmu_validation/evaluate.py`는 기존 **validation 900문항** 평가이므로 이번 Test 실행에는 사용하지 않는다.
 
 ## 1. 필요한 것
 

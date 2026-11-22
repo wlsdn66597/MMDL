@@ -24,7 +24,7 @@ from PIL import Image, ImageOps
 
 ROOT = Path(os.environ.get("QWEN_BASELINE_ROOT", "/shared_dir/qwen_baseline")).expanduser().resolve()
 DATA_DIR = ROOT / "data/era_2000"
-BASELINE_REPO = Path(__file__).resolve().parents[3]
+BASELINE_SRC = Path(__file__).resolve().parents[2] / "eval/mmmu_validation"
 HF_CACHE = ROOT / "cache/huggingface"
 REVISION = "ebb281ec70b05090aa6165b016eac8ec08e71b17"
 MODEL_DIR = HF_CACHE / "hub/models--Qwen--Qwen3-VL-4B-Instruct/snapshots" / REVISION
@@ -97,8 +97,7 @@ class EncodedExample:
         return len(self.prefix_ids) + len(self.target_ids)
 
 
-def baseline_inputs(repo_dir):
-    source = repo_dir / "src"
+def baseline_inputs(source):
     if not (source / "evaluate.py").is_file():
         raise FileNotFoundError(f"Baseline evaluator was not found at {source}.")
     sys.path.insert(0, str(source))
@@ -527,7 +526,7 @@ def merge_epoch(run_dir, epoch):
     from peft import LoraConfig, PeftModel
     from transformers import AutoProcessor, Qwen3VLForConditionalGeneration
 
-    baseline_inputs(BASELINE_REPO)
+    baseline_inputs(BASELINE_SRC)
     from prepare import validate_weights
 
     epoch_name = f"epoch-{epoch:02d}"
@@ -593,8 +592,9 @@ def evaluate_epochs(run_dir, lock_fd):
     if done_epochs != SETTINGS["epochs"]:
         raise RuntimeError(f"Expected {SETTINGS['epochs']} saved epochs, found {done_epochs}.")
     eval_dir = run_dir / "evaluation"
-    evaluator = BASELINE_REPO / "src/evaluate.py"
-    baseline_code = {p.name: sha256_file(p) for p in sorted(evaluator.parent.glob("*")) if p.is_file()}
+    evaluator = BASELINE_SRC / "evaluate.py"
+    source_files = sorted([BASELINE_SRC / "config.json", *BASELINE_SRC.glob("*.py")])
+    baseline_code = {p.name: sha256_file(p) for p in source_files}
     scores = []
     for epoch in range(1, done_epochs + 1):
         epoch_name = f"epoch-{epoch:02d}"
@@ -651,7 +651,7 @@ def evaluate_epochs(run_dir, lock_fd):
 
 
 def run_training(args):
-    prompt_for, baseline_vision, baseline_hash = baseline_inputs(BASELINE_REPO)
+    prompt_for, baseline_vision, baseline_hash = baseline_inputs(BASELINE_SRC)
     vision = baseline_vision if args.baseline_vision else {
         key: SETTINGS[key] for key in ("min_pixels", "max_pixels")
     }
@@ -678,7 +678,7 @@ def main():
     if args.max_tokens < 1:
         parser.error("--max-tokens must be positive.")
     if args.check_data:
-        prompt_for, _, _ = baseline_inputs(BASELINE_REPO)
+        prompt_for, _, _ = baseline_inputs(BASELINE_SRC)
         examples, data_hash = load_examples(args.data_dir, prompt_for)
         print(f"Verified {len(examples)} original+ERA rows and images. SHA-256: {data_hash}")
         return

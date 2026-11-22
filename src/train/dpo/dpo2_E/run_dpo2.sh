@@ -10,6 +10,8 @@ ROOT=/home/latuca/MMDL_solo
 EVAL=/home/latuca/mmdl_test
 TRAIN_PY=/home/latuca/venvs/train/bin/python
 EVAL_PY=$EVAL/.venv/bin/python
+EVAL_SRC=src/eval/mmmu_validation
+[[ -f "$EVAL/$EVAL_SRC/evaluate.py" ]] || EVAL_SRC=src
 SFT_DATA=$ROOT/runs/sft_general_vic2000_e5/data/train.jsonl
 OLD=$ROOT/runs/dpo_ep4_mix_b0.1_lr5e-6/data          # 이전 실험에서 받은 베이스 샘플·채점 재사용
 BASE=/home/latuca/.cache/huggingface/hub/models--Qwen--Qwen3-VL-4B-Instruct/snapshots/ebb281ec70b05090aa6165b016eac8ec08e71b17
@@ -52,7 +54,7 @@ eval_exp() {    # $1=실험 이름
   local X=$1
   if ! is_done eval_$X; then
     wait_gpu; log "[$X] MMMU-val 평가 시작"
-    (cd "$EVAL" && $EVAL_PY src/evaluate.py --config src/config.json --checkpoint "$RUN/$X/train/merged" \
+    (cd "$EVAL" && "$EVAL_PY" "$EVAL_SRC/evaluate.py" --config "$EVAL_SRC/config.json" --checkpoint "$RUN/$X/train/merged" \
       --run-name dpo2_$X) > "$RUN/$X/eval.log" 2>&1
     rm -rf "$RUN/$X/eval"; cp -r "$EVAL/outputs/dpo2_$X" "$RUN/$X/eval"
     $EVAL_PY $ROOT/scripts/summarize_eval.py --eval-dir "$RUN/$X/eval" --out "$RUN/$X/summary_vs_baseline.md" \
@@ -101,14 +103,14 @@ fi
 if ! is_done sample_era; then
   wait_gpu; log "[ERA] ERA 지시로 베이스 응답 샘플링 (2,000문항 × 8, 지시는 샘플링 때만)"
   (cd "$EVAL" && $EVAL_PY $ROOT/scripts/dpo_sample.py --model $BASE --tag base_era --data $SFT_DATA --images $IMAGES \
-    --eval-src $EVAL/src --n 8 --max-total 8192 --chunk 128 --gen-instruction "$ERA_INSTR" \
+    --eval-src "$EVAL/$EVAL_SRC" --n 8 --max-total 8192 --chunk 128 --gen-instruction "$ERA_INSTR" \
     --out "$D/samples_base_era.jsonl") >> "$RUN/sample_era.log" 2>&1
   done_mark sample_era
 fi
 if ! is_done grade_era; then
   wait_gpu; log "[ERA] 채점 (평가 파서 + Qwen3-8B 저지)"
   (cd "$EVAL" && $EVAL_PY $ROOT/scripts/dpo_grade.py --samples "$D/samples_base_era.jsonl" \
-    --source $ROOT/data/vic_era_2000/data.json --eval-src $EVAL/src --out "$D/labels_era.jsonl") >> "$RUN/grade_era.log" 2>&1
+    --source $ROOT/data/vic_era_2000/data.json --eval-src "$EVAL/$EVAL_SRC" --out "$D/labels_era.jsonl") >> "$RUN/grade_era.log" 2>&1
   done_mark grade_era
 fi
 if ! is_done pairs_B; then

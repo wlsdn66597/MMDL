@@ -9,6 +9,8 @@
 # 실행: SEED=3407 nohup bash /shared_dir/MMDL_solo/repro/run_F_cd.sh >> /shared_dir/logs/F_cd.out 2>&1 &
 set -euo pipefail
 source /shared_dir/MMDL_solo/repro/env.sh
+EVAL_SRC=src/eval/mmmu_validation
+[[ -f "$EVAL/$EVAL_SRC/evaluate.py" ]] || EVAL_SRC=src
 export HF_HUB_OFFLINE=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True   # 긴 문항에서 단편화로 인한 OOM 방지
 SEED=${SEED:-3407}
@@ -104,7 +106,7 @@ fi
 if ! is_done eval_$X; then
   guard_window 360 eval; wait_gpu; log "[F $X] MMMU-val 평가 시작"
   rm -rf "$EVAL/outputs/dpo2_F_cd_$X"
-  (cd "$EVAL" && $EVAL_PY src/evaluate.py --config src/config.json --checkpoint "$O/dpo/merged" --run-name dpo2_F_cd_$X) > "$O/eval.log" 2>&1
+  (cd "$EVAL" && "$EVAL_PY" "$EVAL_SRC/evaluate.py" --config "$EVAL_SRC/config.json" --checkpoint "$O/dpo/merged" --run-name dpo2_F_cd_$X) > "$O/eval.log" 2>&1
   rm -rf "$O/eval"; cp -r "$EVAL/outputs/dpo2_F_cd_$X" "$O/eval"
   $EVAL_PY $ROOT/scripts/summarize_eval.py --eval-dir "$O/eval" --out "$O/summary_vs_baseline.md" --label "DPO2-F 자기증류→DPO (seed $SEED)" >> "$O/eval.log" 2>&1 || true
   python3 $ROOT/scripts/eval_extra.py --eval-dir "$O/eval" --out "$O/extra_stats.json" >> "$O/eval.log" 2>&1 || true

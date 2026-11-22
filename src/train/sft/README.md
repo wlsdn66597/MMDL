@@ -22,7 +22,7 @@ Final answer: [최종 답]
 
 ```bash
 export QWEN_BASELINE_ROOT=/shared_dir/qwen_baseline
-python3.12 src/prepare.py \
+python3.12 src/eval/mmmu_validation/prepare.py \
   --model-cache "$QWEN_BASELINE_ROOT/cache/huggingface/hub" \
   --dataset-cache "$QWEN_BASELINE_ROOT/cache/huggingface/datasets"
 .venv/bin/python -m pip install -c requirements.txt peft
@@ -48,6 +48,6 @@ mkdir -p "$DATA_DIR"
   --max-tokens 6144
 ```
 
-학습 코드는 매 epoch의 LoRA와 재개 상태를 저장하고, 병합 모델로 MMMU validation을 평가한다. 같은 설정과 실행 경로를 지정하면 저장 상태에서 이어서 진행한다.
+학습 코드는 매 epoch의 LoRA와 재개 상태를 저장하고, 병합 모델로 MMMU validation을 평가한다. 같은 코드·설정·실행 경로를 지정하면 저장 상태에서 이어서 진행한다. validation 코드 이동 전에 시작한 실행은 당시 커밋에서 재개한다.
 
 이전 SFT 체크포인트는 실습실 저장공간 초기화로 소실됐다. [학습 조건과 epoch별 평가 결과](../../../reports/mmmu.md)를 보관한다.
