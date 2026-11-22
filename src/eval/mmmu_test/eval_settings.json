@@ -1,0 +1,144 @@
+{
+ "note": "MMMU val 공식 베이스라인 평가 설정. 문항은 들어 있지 않다. build_records.py가 이 설정으로 문항 파일을 만든다.",
+ "settings": {
+  "model": {
+   "repo": "Qwen/Qwen3-VL-4B-Instruct",
+   "revision": "ebb281ec70b05090aa6165b016eac8ec08e71b17",
+   "dtype": "bfloat16",
+   "quantization": null
+  },
+  "dataset": {
+   "repo": "MMMU/MMMU",
+   "revision": "98e6ac0cb9b7b2cd2c991b85a50762edc4aedc68",
+   "split": "validation",
+   "configs": [
+    "Accounting",
+    "Agriculture",
+    "Architecture_and_Engineering",
+    "Art",
+    "Art_Theory",
+    "Basic_Medical_Science",
+    "Biology",
+    "Chemistry",
+    "Clinical_Medicine",
+    "Computer_Science",
+    "Design",
+    "Diagnostics_and_Laboratory_Medicine",
+    "Economics",
+    "Electronics",
+    "Energy_and_Power",
+    "Finance",
+    "Geography",
+    "History",
+    "Literature",
+    "Manage",
+    "Marketing",
+    "Materials",
+    "Math",
+    "Mechanical_Engineering",
+    "Music",
+    "Pharmacy",
+    "Physics",
+    "Psychology",
+    "Public_Health",
+    "Sociology"
+   ],
+   "items_per_config": 30,
+   "total_items": 900,
+   "question_type_counts": {
+    "multiple-choice": 847,
+    "open": 53
+   },
+   "images_embedded": false,
+   "lookup": "load_dataset(repo, dataset_config, split=\"validation\", revision=revision) 후 id로 조회. dataset_index는 0-based 보조 위치."
+  },
+  "sampling": {
+   "temperature": 0.7,
+   "top_p": 0.8,
+   "top_k": 20,
+   "repetition_penalty": 1.0,
+   "presence_penalty": 1.5,
+   "seed": 3407,
+   "max_new_tokens": 32768,
+   "vllm_max_tokens": 32768,
+   "stop_token_ids": [],
+   "additional_stop_strings": []
+  },
+  "seed_policy": "fixed 3407 for every request, also engine seed 3407",
+  "vision": {
+   "min_pixels": 1003520,
+   "max_pixels": 4014080,
+   "color_conversion": "RGB",
+   "image_order": "image_1 → image_7; 실제 존재하는 이미지만 사용",
+   "preserve_aspect_ratio": true,
+   "resize_factor": 32,
+   "patch_size": 16,
+   "merge_size": 2,
+   "preprocessing": "qwen_vl_utils.process_vision_info의 smart_resize; vLLM do_resize=false로 중복 resize 방지"
+  },
+  "runtime": {
+   "dtype": "bfloat16",
+   "quantization": null,
+   "tensor_parallel_size": 1,
+   "max_model_len": 64000,
+   "gpu_memory_utilization": 0.9,
+   "max_num_seqs": 1,
+   "max_num_batched_tokens": 4096,
+   "enforce_eager": true,
+   "max_images_per_prompt": 5,
+   "engine": "vLLM",
+   "chat_template_add_generation_prompt": true,
+   "gpu": "NVIDIA GeForce RTX 4090",
+   "package_versions": {
+    "torch": "2.8.0",
+    "vllm": "0.11.0",
+    "transformers": "4.57.0",
+    "qwen-vl-utils": "0.0.14",
+    "datasets": "4.1.1",
+    "Pillow": "11.3.0",
+    "pandas": "3.0.6",
+    "numpy": "2.2.6",
+    "requests": "2.34.2",
+    "huggingface-hub": "0.36.2"
+   }
+  },
+  "prompts": {
+   "multiple-choice": "{optional_hint}Question: {question}\nOptions:\n{lettered_options}Please select the correct answer from the options above.",
+   "open": "{optional_hint}Question: {question}",
+   "optional_hint": "Hint: {hint}\n",
+   "lettered_options": "A. {option_A}\nB. {option_B}\n...",
+   "suffixes": {
+    "multiple-choice": "On the last line, write \"Final answer: LETTER\", replacing LETTER with one uppercase option letter.",
+    "open": "On the last line, write \"Final answer: ANSWER\", replacing ANSWER with a concise final answer."
+   }
+  },
+  "system_message": null,
+  "explicit_chain_of_thought_instruction": false,
+  "judge": {
+   "repo": "Qwen/Qwen3-8B",
+   "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+   "prompt_template": "You are an AI assistant who will help me to match an answer with several options of a single-choice question. You are provided with a question, several options, and an answer, and you need to find which option is most similar to the answer. If the meaning of all options are significantly different from the answer, output Z. Your should output a single uppercase character in A, B, C, D (if they are valid options), and Z. \nExample 1: \nQuestion: What is the main object in image?\nOptions: A. teddy bear B. rabbit C. cat D. dog\nAnswer: a cute teddy bear\nYour output: A\nExample 2: \nQuestion: What is the main object in image?\nOptions: A. teddy bear B. rabbit C. cat D. dog\nAnswer: Spider\nYour output: Z\nExample 3: \nQuestion: {}?\nOptions: {}\nAnswer: {}\nYour output: ",
+   "max_attempts": 25,
+   "max_new_tokens": 4096,
+   "enable_thinking": false,
+   "sampling": {
+    "temperature": 0,
+    "top_p": 1,
+    "top_k": -1,
+    "repetition_penalty": 1,
+    "presence_penalty": 0,
+    "seed": 3407
+   },
+   "runtime": {
+    "dtype": "bfloat16",
+    "quantization": null,
+    "tensor_parallel_size": 1,
+    "max_model_len": 32768,
+    "gpu_memory_utilization": 0.9,
+    "max_num_seqs": 1,
+    "max_num_batched_tokens": 2048,
+    "enforce_eager": true
+   }
+  }
+ }
+}
