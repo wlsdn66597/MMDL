@@ -1,0 +1,12 @@
+* text=auto eol=lf
+*.sh text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+# Preserve the exact archived evaluator bytes, including its original line endings.
+scripts/diag/*.py -text whitespace=cr-at-eol
+scripts/build_records.py -text whitespace=cr-at-eol
+scripts/download.py -text whitespace=cr-at-eol
+scripts/run_eval_dpo2e.sh -text whitespace=cr-at-eol
+eval_settings.json -text whitespace=cr-at-eol
+env/requirements_eval.txt -text whitespace=cr-at-eol

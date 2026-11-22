@@ -1,0 +1,10 @@
+.venv/
+.lab/
+records/
+outputs/
+models/
+checkpoints/
+*.log
+*.zip
+*.tar.gz
+__pycache__/

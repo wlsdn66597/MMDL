@@ -1,0 +1,35 @@
+{
+  "description": "Frozen code and MMMU Test records from AIX-408-06; current generation seed 42, judge seed 3407.",
+  "records_sha256": "f826706492339a5e0c9181e948838fae1aa9bb30f9781973adb61f399f5311d6",
+  "total_items": 10500,
+  "question_type_counts": {
+    "multiple-choice": 9873,
+    "open": 627
+  },
+  "source_sha256": {
+    "eval_settings.json": "5e609e7cb06990dc5634f2e948f840f4f2c205b214c24c3b8e1a5a8c470de552",
+    "env/requirements_eval.txt": "caf8ad1d6665226b559ec4ed46dbc70d7a80784f21695793cc0c6a073306db2b",
+    "scripts/build_records.py": "ef5840bba4b2f2ce2824c4ce1fdd1fc3b4ecfccc575fe99537c7d2dc69d425ac",
+    "scripts/download.py": "7d5a48d1fd329789eac21ad4b6d3bb54e0abef02a3a9c561c067770fb4ff9bc8",
+    "scripts/diag/common.py": "7101dcaeed6a18edb8f5674eff5675db0e291d409a1ce1deac8c6fb1744d1188",
+    "scripts/diag/grade.py": "38fd5882da6469421cec940dce19134faaeb10e1acd6edd433ed3918669f5c59",
+    "scripts/diag/judge.py": "80ac08f1af7a634d59b86318840743be89516788de2205fc52529a447699a17f",
+    "scripts/diag/run_generate.py": "95000b51964803abadaa3a431e2da12efe8d5ce79d880847350cb31867722063",
+    "scripts/run_eval_dpo2e.sh": "cc9d5e53f5cadba1c7750714eea742ab9b0e88e6e4d695a1ca687c03bd018487"
+  },
+  "previous_dpo2e": {
+    "generation_seed": 3407,
+    "correct": 6918,
+    "total": 10500,
+    "merged_archive_sha256": "0f1fd00162da1519a6596d6c7ee5b01079cf7a4d3c7ff2bb33c4a1546657bf3d"
+  },
+  "evaluation": {
+    "generation_seed": 42,
+    "judge_seed": 3407,
+    "max_tokens": 32768,
+    "max_num_seqs": 16,
+    "max_num_batched_tokens": 4096,
+    "loop_stop": true,
+    "judge_gpu_memory_utilization": 0.92
+  }
+}
