@@ -65,8 +65,9 @@ bash scripts/run_test.sh /path/to/merged trained_test_seed3407 3407
 
 병합 모델에는 `--checkpoint /path/to/merged --run-name trained`를 추가합니다. 결과는 `src/eval/mmmu_pro_std10/outputs/`의 실행 폴더에 저장됩니다.
 
-## 학습 데이터와 제출 문서
+## 모델·학습 데이터와 제출 문서
 
-- ERA 2,000문항은 [Hugging Face ZIP](https://huggingface.co/datasets/SSU-MMDL/MMMU_ERA_Dataset/blob/main/vic_era_2000.zip)에서 받습니다. [SFT 실행 안내](src/train/sft/README.md)에 데이터 준비, `--check-data` 검증, 실제 학습 명령이 있습니다. 이전 SFT 체크포인트는 실습실 저장공간 초기화로 소실됐으며 학습 코드와 평가 기록을 보관합니다.
+- 팀의 모델 가중치와 학습 데이터는 [SSU-MMDL Hugging Face 조직](https://huggingface.co/SSU-MMDL)에서 확인할 수 있습니다.
+- [SFT 실행 안내](src/train/sft/README.md)에 데이터 준비, `--check-data` 검증, 실제 학습 명령이 있습니다. 이전 SFT 체크포인트는 실습실 저장공간 초기화로 소실됐으며 학습 코드와 평가 기록을 보관합니다.
 - DPO2-E와 DPO2F-CD는 DPO 단계에서 같은 `pairs_E.jsonl`을 사용합니다. F-CD는 그 전에 자기증류 SFT를 진행합니다. 학습에 필요한 입력과 실행 방법은 [DPO 실행 안내](src/train/dpo/README.md)를 참고합니다.
 - [제출용 베이스라인 보고서](assignment/mmmu_baseline.md)에는 평가 설정·채점 규칙·점수가 있습니다. [제3자 코드 출처 및 라이선스](THIRD_PARTY_LICENSES.txt)도 함께 제공합니다.
