@@ -14,6 +14,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parent.parent
+UNSET = object()
 
 
 def sha(path):
@@ -107,8 +108,11 @@ def model_fingerprint(path):
     if not shards:
         raise ValueError("No model weight shards")
     for name in shards:
+        if not isinstance(name, str) or name in {".", ".."} or "/" in name or "\\" in name:
+            raise ValueError("Weight shards must be filenames within the model directory")
         file = (path / name).resolve(strict=True)
-        if not file.is_relative_to(path) or file.stat().st_size == 0:
+        # Official HF snapshots link flat shard names to the repository's blob cache.
+        if not file.is_file() or file.stat().st_size == 0:
             raise ValueError(f"Invalid weight shard: {name}")
     # Hash weights and tokenizer/processor metadata.
     files = sorted(set(shards) | {p.name for p in path.iterdir()
@@ -122,7 +126,18 @@ def validate_tag(tag):
         raise ValueError("Tag must be 1-100 letters/digits/underscores/hyphens, starting with a letter/digit")
 
 
-def read_rows(path, allowed, seed=None, model=None, complete=False):
+def validate_seed(seed):
+    if not isinstance(seed, int) or isinstance(seed, bool) or not 0 <= seed < 2**32:
+        raise ValueError("Seed must be an integer between 0 and 4294967295")
+
+
+def base_model_path():
+    from huggingface_hub import snapshot_download
+    cfg = read_json(ROOT / "eval_settings.json")["settings"]["model"]
+    return str(Path(snapshot_download(cfg["repo"], revision=cfg["revision"], local_files_only=True)).resolve())
+
+
+def read_rows(path, allowed, seed=None, model=UNSET, complete=False):
     rows = {}
     if not path.exists():
         if complete:
@@ -141,7 +156,7 @@ def read_rows(path, allowed, seed=None, model=None, complete=False):
                 raise ValueError(f"Unexpected or duplicate ID: {rid} in {path}")
             if seed is not None and row.get("seed") != seed:
                 raise ValueError(f"Mixed generation seeds in {path}")
-            if model is not None and row.get("model_path") != model:
+            if model is not UNSET and ("model_path" not in row or row["model_path"] != model):
                 raise ValueError(f"Mixed model paths in {path}")
             rows[rid] = row
     if complete and set(rows) != allowed:
@@ -149,22 +164,41 @@ def read_rows(path, allowed, seed=None, model=None, complete=False):
     return rows
 
 
-def begin(model, tag, generation_seed=42):
+def normalize_identity(identity):
+    # Existing manifests either omitted the profile or called the merged model "dpo_e".
+    profile = identity.get("profile", "merged")
+    if profile == "dpo_e":
+        profile = "merged"
+    if profile not in {"baseline", "merged"}:
+        raise ValueError("Unknown evaluation profile")
+    prediction_model = None if profile == "baseline" else identity["model"]["path"]
+    if identity.get("prediction_model_path", prediction_model) != prediction_model:
+        raise ValueError("Saved prediction model does not match the evaluation profile")
+    return dict(identity, profile=profile, prediction_model_path=prediction_model)
+
+
+def begin(model, tag, seed=42, *, baseline=False):
     validate_tag(tag)
+    validate_seed(seed)
     source_check()
     data = records_check(ROOT / "records/mmmu_test.json")
     runtime = runtime_info()
     fingerprint = model_fingerprint(model)
     frozen = reference()
-    evaluation = dict(frozen["evaluation"], generation_seed=generation_seed)
-    identity = {"model": fingerprint, "records_sha256": frozen["records_sha256"],
-                "source_sha256": frozen["source_sha256"], "evaluation": evaluation, "tag": tag}
+    profile = "baseline" if baseline else "merged"
+    if baseline and fingerprint["path"] != base_model_path():
+        raise ValueError("Baseline must use the pinned official checkpoint cache")
+    effective = dict(frozen["evaluation"], generation_seed=seed)
+    identity = normalize_identity({"model": fingerprint, "records_sha256": frozen["records_sha256"],
+                                   "source_sha256": frozen["source_sha256"], "evaluation": effective,
+                                   "tag": tag, "profile": profile})
+    prediction_model = identity["prediction_model_path"]
     out = ROOT / "outputs"
     out.mkdir(exist_ok=True)
     manifest = out / f"{tag}.manifest.json"
     if manifest.exists():
         previous = read_json(manifest)
-        if previous["identity"] != identity:
+        if normalize_identity(previous["identity"]) != identity:
             raise ValueError("This tag belongs to a different checkpoint/protocol. Use a new tag.")
         if previous["runtime"] != runtime:
             raise ValueError("Runtime changed during resume. Restore the same environment/GPU.")
@@ -173,15 +207,17 @@ def begin(model, tag, generation_seed=42):
             raise ValueError("Existing outputs have no identity manifest. Use a new tag; do not mix old responses.")
         write_json(manifest, {"identity": identity, "runtime": runtime,
                               "record_settings": data["evaluation"]["settings"],
-                              "note": f"CLI overrides: generation seed {generation_seed}, seqs 16, max tokens 32768, loop-stop; judge unchanged."})
+                              "note": f"CLI overrides: generation seed {seed}, seqs 16, max tokens 32768, loop-stop; judge seed 3407 unchanged."})
     ids = {r["id"] for r in data["records"]}
-    predictions = read_rows(out / f"{tag}.jsonl", ids, seed=generation_seed, model=fingerprint["path"])
+    predictions = read_rows(out / f"{tag}.jsonl", ids, seed=seed, model=prediction_model)
+    if any(row.get("run_tag") != tag for row in predictions.values()):
+        raise ValueError("Mixed run tags in predictions")
     graded = out / f"{tag}.graded.jsonl"
     if graded.exists() and graded.stat().st_size:
         # The archived launcher skips a nonempty graded file; refuse a partial one.
-        read_rows(graded, ids, seed=generation_seed, complete=True)
-        read_rows(out / f"{tag}.jsonl", ids, seed=generation_seed, model=fingerprint["path"], complete=True)
-    print(f"Protocol verified: model={fingerprint['path']}, generation seed={generation_seed}, judge seed=3407, saved={len(predictions)}/10500")
+        read_rows(graded, ids, seed=seed, complete=True)
+        read_rows(out / f"{tag}.jsonl", ids, seed=seed, model=prediction_model, complete=True)
+    print(f"Protocol verified: profile={profile}, model={fingerprint['path']}, generation seed={seed}, judge seed=3407, saved={len(predictions)}/10500")
 
 
 def verify(tag):
@@ -191,15 +227,28 @@ def verify(tag):
     ids = {r["id"] for r in data["records"]}
     out = ROOT / "outputs"
     manifest = read_json(out / f"{tag}.manifest.json")
-    generation_seed = manifest["identity"]["evaluation"]["generation_seed"]
-    predictions = read_rows(out / f"{tag}.jsonl", ids, seed=generation_seed,
-                            model=manifest["identity"]["model"]["path"], complete=True)
-    graded = read_rows(out / f"{tag}.graded.jsonl", ids, seed=generation_seed, complete=True)
+    identity = normalize_identity(manifest["identity"])
+    frozen = reference()
+    seed = identity["evaluation"]["generation_seed"]
+    validate_seed(seed)
+    if (identity["records_sha256"] != frozen["records_sha256"] or
+            identity["source_sha256"] != frozen["source_sha256"] or
+            identity["evaluation"] != dict(frozen["evaluation"], generation_seed=seed) or
+            identity["tag"] != tag):
+        raise ValueError("Saved identity does not match this evaluator/profile")
+    predictions = read_rows(out / f"{tag}.jsonl", ids, seed=seed,
+                            model=identity["prediction_model_path"], complete=True)
+    if any(row.get("run_tag") != tag for row in predictions.values()):
+        raise ValueError("Mixed run tags in predictions")
+    graded = read_rows(out / f"{tag}.graded.jsonl", ids, seed=seed, complete=True)
     judges = read_rows(out / f"{tag}.judge.jsonl", ids)
     sys.path.insert(0, str(ROOT / "scripts/diag"))
     from common import grade_prediction
+    needed = set()
     for rec in data["records"]:
         rid = rec["id"]
+        if grade_prediction(predictions[rid], rec)["verdict"] == "needs_judge":
+            needed.add(rid)
         actual = graded[rid]
         expected = grade_prediction(predictions[rid], rec, judges.get(rid))
         if any(actual.get(key) != value for key, value in expected.items()):
@@ -209,10 +258,14 @@ def verify(tag):
                 raise ValueError(f"Grading metadata mismatch: {rid} / {key}")
         if actual["verdict"] not in {"correct", "incorrect"}:
             raise ValueError(f"Unresolved grading: {rid}")
+    if needed != set(judges):
+        raise ValueError("Judge output IDs must match exactly the responses requiring judge")
     correct = sum(r["verdict"] == "correct" for r in graded.values())
     result = {"unique_predictions": len(predictions), "unique_graded": len(graded),
               "missing": 0, "duplicates": 0, "regrade_mismatches": 0, "correct": correct,
-              "accuracy_percent": 100 * correct / len(ids), "generation_seed": generation_seed,
+              "accuracy_percent": 100 * correct / len(ids), "generation_seed": seed,
+              "judge_seed": 3407, "status": "PASS", "profile": identity["profile"],
+              "scope": "Stored-judge grading replay; not semantic correctness or new judge inference.",
               "generation_status": dict(collections.Counter(r["generation_status"] for r in graded.values()))}
     write_json(out / f"{tag}.verification.json", result)
     print(json.dumps(result, ensure_ascii=False, indent=2))
@@ -223,12 +276,14 @@ def main():
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("source-check")
     sub.add_parser("runtime-check")
+    sub.add_parser("base-path")
     record_parser = sub.add_parser("records-check")
     record_parser.add_argument("path")
     begin_parser = sub.add_parser("begin")
     begin_parser.add_argument("model")
     begin_parser.add_argument("tag")
-    begin_parser.add_argument("--generation-seed", type=int, default=42)
+    begin_parser.add_argument("--generation-seed", "--seed", type=int, default=42)
+    begin_parser.add_argument("--baseline", action="store_true")
     verify_parser = sub.add_parser("verify")
     verify_parser.add_argument("tag")
     args = parser.parse_args()
@@ -240,9 +295,12 @@ def main():
         source_check()
         records_check(Path(args.path))
     elif args.command == "begin":
-        begin(args.model, args.tag, args.generation_seed)
+        begin(args.model, args.tag, args.generation_seed, baseline=args.baseline)
     elif args.command == "verify":
         verify(args.tag)
+    elif args.command == "base-path":
+        print(base_model_path())
+        return
     print("PASS", args.command)
 
 

@@ -1,6 +1,6 @@
-# AIX-408-06 MMMU Test 평가 계약
+# 공통 MMMU Test 평가 조건
 
-2026-11-21 DPO2-E 재현 모델 seed 42 실행에서 사용한 코드와 설정을 기준으로 한다. 다른 모델의 효과를 비교할 때 모델 경로와 실행 이름만 바꾼다.
+AIX-408-06에서 기본 모델과 DPO2-E를 평가한 공통 프롬프트·생성·채점 조건을 사용한다. 기본 모델과 외부에서 받은 병합 모델은 하나의 실행기에서 선택한다.
 
 | 항목 | 실제 적용 값 |
 |---|---|
@@ -9,6 +9,7 @@
 | 유형 | 객관식 9,873 / 주관식 627 |
 | 문항 파일 SHA256 | `f826706492339a5e0c9181e948838fae1aa9bb30f9781973adb61f399f5311d6` |
 | 기준 processor | `Qwen/Qwen3-VL-4B-Instruct` @ `ebb281ec70b05090aa6165b016eac8ec08e71b17` |
+| 기본 모델 | 첫 번째 인자 `baseline`으로 위 고정 공식 버전 선택 |
 | 학습 모델 | 로컬 BF16 전체 병합 모델, 양자화 없음 |
 | 생성 seed | 기본값 **42**. 실행기의 세 번째 인자로 지정한 값을 엔진과 각 요청에 적용 |
 | temperature / top-p / top-k | 0.7 / 0.8 / 20 |
@@ -46,7 +47,7 @@ hint가 있으면 원본 템플릿에 따라 포함한다. 질문과 선택지�
 
 마지막 Final answer 필드와 원본 fallback 규칙을 적용한다. 해석하지 못한 응답만 Qwen3-8B에게 보기를 대응시키게 한다. 주관식 역시 원본 문자열·특례 규칙과 Judge를 사용한다. 루프 중단·출력 길이 제한은 오답이다. 이 규칙과 파서는 현재 서버 평가와 동일한 소스 파일로 고정했다.
 
-이 브랜치에서 만든 `<tag>.manifest.json`은 실제 모델 전체 파일 해시, 코드 해시, 문항 해시, 생성·Judge seed, 원본 문항 설정, 설치 패키지, GPU·드라이버를 기록한다. CLI 덮어쓰기 값이 `identity.evaluation`에 따로 있으며, 템플릿의 sampling.seed=3407을 실제 생성 seed로 읽으면 안 된다.
+`<tag>.manifest.json`은 실제 모델 파일 해시, 코드 해시, 문항 해시, 생성·Judge seed, 모델 선택 방식, 설치 패키지, GPU·드라이버를 기록한다. 실제 적용값은 `identity.evaluation`에 있다. 기본 모델은 예측 파일에 `model_path: null`, 병합 모델은 사용한 실제 체크포인트 경로를 기록한다.
 
 검증기는 GPU를 다시 호출하지 않고 저장된 Judge 결과와 원본 채점기로 결과를 대조한다. 이는 Judge 추론을 반복하거나 모든 답을 사람이 확인하는 검증이 아니다.
 
@@ -55,3 +56,5 @@ hint가 있으면 원본 템플릿에 따라 포함한다. 질문과 선택지�
 `eval_settings.json`, `env/requirements_eval.txt`, `scripts/build_records.py`, `scripts/download.py`, `scripts/diag/*.py`는 기존 408-06 Test baseline 평가 묶음에서 복사했다. `scripts/run_eval_dpo2e.sh`는 DPO2-E 실행에 쓰인 원본이며, baseline 실행기의 옵션 앞 누락된 공백 하나를 고친 버전이다. 파일별 SHA256은 `protocol_reference.json`에 기록했다. 원본 주석에 val/진단용이라고 적힌 부분은 파일 보존을 위해 그대로 두었으며, 실제 Test 설정은 위 표와 생성된 records가 정한다.
 
 추가한 prepare_test.sh, cache_test.py, run_test.sh, protocol.py는 배포·검증용이다. 생성 및 채점 로직을 교체하지 않는다. 기존 저장소의 제3자 코드 출처는 [THIRD_PARTY_LICENSES.txt](../../../THIRD_PARTY_LICENSES.txt)를 따른다. 모델과 데이터의 이용 조건은 각 배포처를 따른다.
+
+모델 선택과 완료 검증은 팀원의 [기본 모델 평가](https://github.com/wlsdn66597/MMDL/tree/e4783a6f0fc8ee668807eda6baf18325ad8661d0/mmmu_test_eval) 및 [DPO2-E 평가](https://github.com/wlsdn66597/MMDL/tree/9dbedf1196e112741138e0c9eb4ac7298d66b529/mmmu_test_eval)를 공통 실행기로 통합했다.
