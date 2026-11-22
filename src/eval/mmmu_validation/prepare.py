@@ -11,7 +11,9 @@ import subprocess
 import sys
 import venv
 
-ROOT = Path(__file__).resolve().parents[1]
+SOURCE_DIR = Path(__file__).resolve().parent
+ROOT = SOURCE_DIR.parents[2]
+CONFIG_PATH = SOURCE_DIR / 'config.json'
 
 
 def read(path):
@@ -54,7 +56,7 @@ def now():
 
 
 def config(path=None):
-    c = read(path or ROOT / 'src/config.json')
+    c = read(path or CONFIG_PATH)
     assert c['model']['repo'] == 'Qwen/Qwen3-VL-4B-Instruct'
     assert c['model']['revision'] == 'ebb281ec70b05090aa6165b016eac8ec08e71b17'
     assert c['dataset']['repo'] == 'MMMU/MMMU'
@@ -153,7 +155,7 @@ def prepare_assets(c, paths, offline=False):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--config', default=str(ROOT / 'src/config.json'))
+    p.add_argument('--config', default=str(CONFIG_PATH))
     p.add_argument('--model-cache')
     p.add_argument('--dataset-cache')
     p.add_argument('--existing-env', action='store_true', help='Validate this interpreter; do not create/install another environment.')

@@ -10,11 +10,11 @@
 
 | 파일·폴더 | 역할 |
 |---|---|
-| `src/prepare.py` | 가상환경·패키지 설치, 고정 모델·데이터 준비와 환경 검사 |
-| `src/evaluate.py` | 전체 평가 실행, 중단 후 재개, 체크포인트 지정, 저장 응답 재채점 |
-| `src/parsers.py` | 최종 답·공식 규칙·저지 출력 파서 |
-| `src/judge.py` | 로컬 Qwen3-8B 저지 실행 |
-| `src/config.json` | 모델·데이터 revision, 프롬프트, 생성·이미지·채점 설정 |
+| `src/eval/mmmu_validation/prepare.py` | 가상환경·패키지 설치, 고정 모델·데이터 준비와 환경 검사 |
+| `src/eval/mmmu_validation/evaluate.py` | 전체 평가 실행, 중단 후 재개, 체크포인트 지정, 저장 응답 재채점 |
+| `src/eval/mmmu_validation/parsers.py` | 최종 답·공식 규칙·저지 출력 파서 |
+| `src/eval/mmmu_validation/judge.py` | 로컬 Qwen3-8B 저지 실행 |
+| `src/eval/mmmu_validation/config.json` | 모델·데이터 revision, 프롬프트, 생성·이미지·채점 설정 |
 | `reports/` | 평가 방법·결과·분석 보고서 |
 | `requirements.txt` | 고정 패키지 버전 |
 | `THIRD_PARTY_LICENSES.txt` | 차용한 공식 코드의 출처와 라이선스 |
@@ -27,8 +27,8 @@ Linux x86-64(Ubuntu 또는 NVIDIA GPU 사용이 가능한 WSL2), Python 3.12, BF
 ```bash
 git clone https://github.com/yunheeseong1/mmdl_test.git
 cd mmdl_test
-python3.12 src/prepare.py
-.venv/bin/python src/evaluate.py --config src/config.json --run-name baseline
+python3.12 src/eval/mmmu_validation/prepare.py
+.venv/bin/python src/eval/mmmu_validation/evaluate.py --config src/eval/mmmu_validation/config.json --run-name baseline
 ```
 
 준비 스크립트는 `.venv`를 만들고 고정 패키지를 설치한 뒤 평가 모델·저지 모델·MMMU 30과목 validation을 Hugging Face 캐시에 준비합니다. 인터넷과 충분한 저장 공간이 필요합니다. 평가는 준비된 캐시를 오프라인으로 사용하며, 모델 추론이 종료된 다음 저지를 실행합니다.
@@ -38,20 +38,20 @@ python3.12 src/prepare.py
 ### 캐시 위치 지정
 
 ```bash
-python3.12 src/prepare.py \
+python3.12 src/eval/mmmu_validation/prepare.py \
   --model-cache /path/to/model-cache --dataset-cache /path/to/dataset-cache
-.venv/bin/python src/evaluate.py --run-name baseline \
+.venv/bin/python src/eval/mmmu_validation/evaluate.py --run-name baseline \
   --model-cache /path/to/model-cache --dataset-cache /path/to/dataset-cache
 ```
 
-캐시 위치는 명령줄 인자, `MMMU_MODEL_CACHE`·`MMMU_DATASET_CACHE` 환경변수, `src/config.json` 순으로 적용됩니다. `--model-cache`는 모델과 저지의 Hugging Face 캐시 루트, `--dataset-cache`는 고정 MMMU 데이터의 캐시 위치입니다.
+캐시 위치는 명령줄 인자, `MMMU_MODEL_CACHE`·`MMMU_DATASET_CACHE` 환경변수, `src/eval/mmmu_validation/config.json` 순으로 적용됩니다. `--model-cache`는 모델과 저지의 Hugging Face 캐시 루트, `--dataset-cache`는 고정 MMMU 데이터의 캐시 위치입니다.
 
 ### 기존 환경·캐시 사용
 
 ```bash
-/path/to/venv/bin/python src/prepare.py --existing-env --offline
+/path/to/venv/bin/python src/eval/mmmu_validation/prepare.py --existing-env --offline
 # 패키지 버전·GPU만 점검
-/path/to/venv/bin/python src/prepare.py --existing-env --check-only
+/path/to/venv/bin/python src/eval/mmmu_validation/prepare.py --existing-env --check-only
 ```
 
 ### 중단 후 재개
@@ -61,7 +61,7 @@ python3.12 src/prepare.py \
 ### 체크포인트 변경
 
 ```bash
-.venv/bin/python src/evaluate.py --config src/config.json \
+.venv/bin/python src/eval/mmmu_validation/evaluate.py --config src/eval/mmmu_validation/config.json \
   --checkpoint /path/to/merged-bf16-checkpoint --run-name finetuned
 ```
 
@@ -70,8 +70,8 @@ python3.12 src/prepare.py \
 ### 파서 검사·저장 응답 재채점
 
 ```bash
-python src/evaluate.py --selfcheck
-python src/evaluate.py --run-name saved-baseline \
+python src/eval/mmmu_validation/evaluate.py --selfcheck
+python src/eval/mmmu_validation/evaluate.py --run-name saved-baseline \
   --import-results /path/to/baseline_results.json
 ```
 
@@ -95,5 +95,5 @@ python src/evaluate.py --run-name saved-baseline \
 ## 평가 보고서·라이선스
 
 - [베이스라인 평가 보고서](reports/mmmu_baseline.md): 제출 템플릿에 따른 평가 조건·결과·공식 수치 비교·한계
-- [고정 설정](src/config.json): 실행에 적용되는 설정과 공식 코드 출처
+- [고정 설정](src/eval/mmmu_validation/config.json): 실행에 적용되는 설정과 공식 코드 출처
 - [공식 코드 라이선스](THIRD_PARTY_LICENSES.txt)

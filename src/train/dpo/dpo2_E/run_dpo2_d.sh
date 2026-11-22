@@ -6,6 +6,8 @@ ROOT=/home/latuca/MMDL_solo
 EVAL=/home/latuca/mmdl_test
 TRAIN_PY=/home/latuca/venvs/train/bin/python
 EVAL_PY=$EVAL/.venv/bin/python
+EVAL_SRC=src/eval/mmmu_validation
+[[ -f "$EVAL/$EVAL_SRC/evaluate.py" ]] || EVAL_SRC=src
 SFT_DATA=$ROOT/runs/sft_general_vic2000_e5/data/train.jsonl
 OLD=$ROOT/runs/dpo_ep4_mix_b0.1_lr5e-6/data
 BASE=/home/latuca/.cache/huggingface/hub/models--Qwen--Qwen3-VL-4B-Instruct/snapshots/ebb281ec70b05090aa6165b016eac8ec08e71b17
@@ -48,7 +50,7 @@ if ! is_done train_$X; then
 fi
 if ! is_done eval_$X; then
   wait_gpu; log "[$X] MMMU-val 평가 시작"
-  (cd "$EVAL" && $EVAL_PY src/evaluate.py --config src/config.json --checkpoint "$RUN/$X/train/merged" \
+  (cd "$EVAL" && "$EVAL_PY" "$EVAL_SRC/evaluate.py" --config "$EVAL_SRC/config.json" --checkpoint "$RUN/$X/train/merged" \
     --run-name dpo2_$X) > "$RUN/$X/eval.log" 2>&1
   rm -rf "$RUN/$X/eval"; cp -r "$EVAL/outputs/dpo2_$X" "$RUN/$X/eval"
   $EVAL_PY $ROOT/scripts/summarize_eval.py --eval-dir "$RUN/$X/eval" --out "$RUN/$X/summary_vs_baseline.md" \

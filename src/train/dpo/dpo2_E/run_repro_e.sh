@@ -10,6 +10,8 @@
 #   STOP_AFTER=<단계이름> 을 주면 그 단계까지만 하고 멈춘다.
 set -euo pipefail
 source /shared_dir/MMDL_solo/repro/env.sh
+EVAL_SRC=src/eval/mmmu_validation
+[[ -f "$EVAL/$EVAL_SRC/evaluate.py" ]] || EVAL_SRC=src
 mkdir -p "$D" "$OLD" "$(dirname "$SFT_DATA")" "$ROOT/config" "$ROOT/scripts"
 X=E
 log() { echo "[$(date '+%F %T')] $*" | tee -a "$RUN/pipeline.log"; }
@@ -66,7 +68,7 @@ done
 # ---- 1) SFT 학습 데이터 (1,997문항: V 398 / I 600 / C 999) ----
 if ! is_done sft_data; then
   log "[SFT 데이터] prepare_sft_general.py (max-tokens 8192)"
-  $TRAIN_PY $ROOT/scripts/prepare_sft_general.py --data-dir $IMAGES --eval-src $EVAL/src \
+  $TRAIN_PY $ROOT/scripts/prepare_sft_general.py --data-dir $IMAGES --eval-src "$EVAL/$EVAL_SRC" \
     --out "$SFT_DATA" --max-tokens 8192 > "$RUN/prepare_sft.log" 2>&1
   n=$(wc -l < "$SFT_DATA"); log "SFT 데이터: $n문항 / $(tail -1 "$RUN/prepare_sft.log" | cut -c1-300)"
   check sft_rows "$n" 1997 0
@@ -75,10 +77,10 @@ fi
 stop_after sft_data
 
 # ---- 2) 베이스 샘플링 (2,000문항 × 8, 예전 서버 약 7.8시간, 이어서 하기 가능) ----
-COMMON="--data $SFT_DATA --images $IMAGES --eval-src $EVAL/src --n 8 --max-total 8192 --chunk 128"
+COMMON=(--data "$SFT_DATA" --images "$IMAGES" --eval-src "$EVAL/$EVAL_SRC" --n 8 --max-total 8192 --chunk 128)
 if ! is_done sample_base; then
   wait_gpu; log "[베이스] 응답 샘플링 (문항당 8개)"
-  (cd "$EVAL" && $EVAL_PY $ROOT/scripts/dpo_sample.py --model $BASE_REPO --revision $BASE_REV --tag base $COMMON \
+  (cd "$EVAL" && $EVAL_PY $ROOT/scripts/dpo_sample.py --model $BASE_REPO --revision $BASE_REV --tag base "${COMMON[@]}" \
     --out "$OLD/samples_base.jsonl") >> "$RUN/sample_base.log" 2>&1
   check base_sample_rows "$(wc -l < "$OLD/samples_base.jsonl")" 1997 0
   done_mark sample_base
@@ -86,7 +88,7 @@ fi
 if ! is_done grade_base; then
   wait_gpu; log "[베이스] 채점 (평가 파서 + Qwen3-8B 저지)"
   (cd "$EVAL" && $EVAL_PY $ROOT/scripts/dpo_grade.py --samples "$OLD/samples_base.jsonl" \
-    --source $IMAGES/data.json --eval-src $EVAL/src --out "$OLD/labels.jsonl") >> "$RUN/grade_base.log" 2>&1
+    --source $IMAGES/data.json --eval-src "$EVAL/$EVAL_SRC" --out "$OLD/labels.jsonl") >> "$RUN/grade_base.log" 2>&1
   acc=$(python3 -c "import json;L=[json.loads(l) for l in open('$OLD/labels.jsonl')];print(round(sum(r['label'] is True for r in L)/len(L),4))")
   log "[베이스] 정답 비율 $acc (원래 9367/15976 = 0.5863)"
   check base_acc "$acc" 0.5863 0.06
@@ -98,7 +100,7 @@ stop_after grade_base
 if ! is_done sample_era; then
   wait_gpu; log "[ERA] ERA 지시로 베이스 응답 샘플링 (2,000문항 × 8, 지시는 샘플링 때만)"
   (cd "$EVAL" && $EVAL_PY $ROOT/scripts/dpo_sample.py --model $BASE --tag base_era --data $SFT_DATA --images $IMAGES \
-    --eval-src $EVAL/src --n 8 --max-total 8192 --chunk 128 --gen-instruction "$ERA_INSTR" \
+    --eval-src "$EVAL/$EVAL_SRC" --n 8 --max-total 8192 --chunk 128 --gen-instruction "$ERA_INSTR" \
     --out "$D/samples_base_era.jsonl") >> "$RUN/sample_era.log" 2>&1
   check era_sample_rows "$(wc -l < "$D/samples_base_era.jsonl")" 1997 0
   done_mark sample_era
@@ -106,7 +108,7 @@ fi
 if ! is_done grade_era; then
   wait_gpu; log "[ERA] 채점 (평가 파서 + Qwen3-8B 저지)"
   (cd "$EVAL" && $EVAL_PY $ROOT/scripts/dpo_grade.py --samples "$D/samples_base_era.jsonl" \
-    --source $IMAGES/data.json --eval-src $EVAL/src --out "$D/labels_era.jsonl") >> "$RUN/grade_era.log" 2>&1
+    --source $IMAGES/data.json --eval-src "$EVAL/$EVAL_SRC" --out "$D/labels_era.jsonl") >> "$RUN/grade_era.log" 2>&1
   done_mark grade_era
 fi
 stop_after grade_era
@@ -177,7 +179,7 @@ stop_after train_$X
 if ! is_done eval_$X; then
   guard_window 360 "eval_$X"; wait_gpu; log "[$X] MMMU-val 평가 시작"
   rm -rf "$EVAL/outputs/dpo2_$X"
-  (cd "$EVAL" && $EVAL_PY src/evaluate.py --config src/config.json --checkpoint "$RUN/$X/train/merged" \
+  (cd "$EVAL" && "$EVAL_PY" "$EVAL_SRC/evaluate.py" --config "$EVAL_SRC/config.json" --checkpoint "$RUN/$X/train/merged" \
     --run-name dpo2_$X) > "$RUN/$X/eval.log" 2>&1
   rm -rf "$RUN/$X/eval"; cp -r "$EVAL/outputs/dpo2_$X" "$RUN/$X/eval"
   $EVAL_PY $ROOT/scripts/summarize_eval.py --eval-dir "$RUN/$X/eval" --out "$RUN/$X/summary_vs_baseline.md" \

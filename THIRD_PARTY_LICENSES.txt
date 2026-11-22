@@ -1,4 +1,4 @@
-Official rule functions in src/parsers.py and prompt templates in src/config.json
+Official rule functions in src/eval/mmmu_validation/parsers.py and prompt templates in src/eval/mmmu_validation/config.json
 Source: QwenLM/Qwen3-VL, commit 96588727e44c78b25ba03ea03b8e12f7e64fd0da
 Copyright holders: Qwen Team / original upstream contributors
 Changes: HF pinned inputs, final-field-first parser, local judge output parser and no-random policies.

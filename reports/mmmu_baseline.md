@@ -4,7 +4,7 @@
 - **팀원**: 김진우, 김선재, 안영찬, 윤희성
 - **작성일**: 2026-10-08 (KST)
 - **평가 프롬프트**: 공식 기본 문구 + 마지막 줄 Final answer 지시
-- **재현 커맨드**: `.venv/bin/python src/evaluate.py --config src/config.json --run-name baseline`
+- **재현 커맨드**: `.venv/bin/python src/eval/mmmu_validation/evaluate.py --config src/eval/mmmu_validation/config.json --run-name baseline`
 
 ## 1. 환경 / 재현성
 
@@ -31,7 +31,7 @@ MMMU_DATASET_CACHE=/path/to/mmmu-dataset-cache
 BASELINE_CHECKPOINT="${MMMU_MODEL_CACHE}/models--Qwen--Qwen3-VL-4B-Instruct/snapshots/ebb281ec70b05090aa6165b016eac8ec08e71b17"
 
 # 전체 평가: 추론 → 파서 → 필요한 저지 → 최종 표
-.venv/bin/python src/evaluate.py --config src/config.json --run-name baseline \
+.venv/bin/python src/eval/mmmu_validation/evaluate.py --config src/eval/mmmu_validation/config.json --run-name baseline \
   --checkpoint "$BASELINE_CHECKPOINT" \
   --model-cache "$MMMU_MODEL_CACHE" --dataset-cache "$MMMU_DATASET_CACHE"
 ```
@@ -61,7 +61,7 @@ On the last line, write "Final answer: ANSWER", replacing ANSWER with a concise 
 ` 형태로 연결한다. 데이터의 `<image n>` 표지와 질문·보기는 그대로 유지한다. 존재하는 image_1→image_7의 이미지를 RGB로 변환해 user 메시지의 텍스트 앞에 배치한다. 별도 system 메시지·CoT·설명 금지 지시는 없다. 모델 processor의 `apply_chat_template(..., add_generation_prompt=True)`를 사용한다.
 
 - **출처**: [공식 build_mmmu_prompt](https://github.com/QwenLM/Qwen3-VL/blob/96588727e44c78b25ba03ea03b8e12f7e64fd0da/evaluation/mmmu/run_mmmu.py)의 기본 문구를 차용하고 마지막 줄 지시를 직접 추가했다. 공식 원본 그대로인 프롬프트라고 주장하지 않는다.
-- **선택 이유**: 풀이를 허용하면서 실제 최종 답을 명시하도록 하여 본문 선택지 언급과 최종 답을 구분하고 로컬 저지 의존을 줄인다. 최종 template은 [src/config.json](../src/config.json)에 고정한다.
+- **선택 이유**: 풀이를 허용하면서 실제 최종 답을 명시하도록 하여 본문 선택지 언급과 최종 답을 구분하고 로컬 저지 의존을 줄인다. 최종 template은 [src/eval/mmmu_validation/config.json](../src/eval/mmmu_validation/config.json)에 고정한다.
 
 ## 3. 생성(Decoding) 설정
 

@@ -263,7 +263,7 @@ def summaries(records,c):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--config',default=str(ROOT/'src/config.json'))
+    p.add_argument('--config',default=str(prepare.CONFIG_PATH))
     p.add_argument('--run-name',default='baseline')
     p.add_argument('--checkpoint',help='Local merged BF16 Qwen3-VL checkpoint; use pinned baseline when omitted.')
     p.add_argument('--model-cache'); p.add_argument('--dataset-cache')
@@ -293,7 +293,8 @@ def main():
         return
     paths = prepare.cache_paths(c,args.model_cache,args.dataset_cache)
     identity = model_identity(args,c)
-    code = {str(f.relative_to(ROOT)):prepare.digest(f) for f in sorted((ROOT/'src').glob('*')) if f.is_file()}
+    source_files = sorted([prepare.CONFIG_PATH, *prepare.SOURCE_DIR.glob('*.py')])
+    code = {f.relative_to(ROOT).as_posix(): prepare.digest(f) for f in source_files}
     signature = hashlib.sha256(json.dumps({'configuration':c,'model_identity':identity,'code':code},sort_keys=True).encode()).hexdigest()
     manifest_path = run_dir/'manifest.json'
     if manifest_path.exists():
