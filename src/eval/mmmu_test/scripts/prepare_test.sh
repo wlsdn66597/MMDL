@@ -21,4 +21,4 @@ mkdir -p records outputs
 "$PY" scripts/build_records.py mmmu-test --out records/mmmu_test.tmp.json
 "$PY" scripts/protocol.py records-check records/mmmu_test.tmp.json
 mv records/mmmu_test.tmp.json records/mmmu_test.json
-echo 'Ready: frozen MMMU Test records verified. Supply a merged model to scripts/run_test.sh.'
+echo 'Ready: frozen MMMU Test records verified. Run scripts/run_test.sh with baseline or a merged model path.'

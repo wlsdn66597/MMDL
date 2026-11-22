@@ -1,13 +1,13 @@
 # MMMU Test 10,500문항 평가
 
-AIX-408-06에서 2026-11-21에 시작한 **DPO2-E 재현 모델 · MMMU Test 10,500문항 · 생성 seed 42** 평가와 같은 방법이다. 다른 ERA 강화 모델도 **병합 모델 경로와 실행 이름만 바꿔서** 평가한다. 아래 명령은 이 폴더를 기준으로 한다.
+**MMMU Test 10,500문항**에서 기본 모델과 DPO2-E·DPO2F-CD 같은 병합 모델을 같은 코드로 평가한다. 같은 조건으로 비교할 때는 생성 seed `3407`을 명시한다. 저장된 점수는 [모델 비교 보고서](../../../reports/mmmu_test/comparison.md)에 있다.
 
 현재 서버에서 사용한 생성·채점 코드와 `run_eval_dpo2e.sh`를 원본 바이트 그대로 보존했다. 설치, 파일 검증, 실행 기록, 완료 검증만 바깥에 추가했다. 저장소의 `src/evaluate.py`는 기존 **validation 900문항** 평가이므로 이번 Test 실행에는 사용하지 않는다.
 
 ## 1. 필요한 것
 
 - Linux x86-64, Python **3.12**, NVIDIA GPU. 기준 환경은 **RTX 4090 24GB**, vLLM **0.11.0**, torch **2.8.0**, transformers **4.57.0**이다. 패키지 전체 버전은 `env/requirements_eval.txt`에 고정했다.
-- 평가할 **Qwen3-VL-4B의 BF16 전체 병합 체크포인트**. `config.json`, `model*.safetensors`, shard index, tokenizer/processor 파일이 들어 있는 `merged/` 디렉터리가 필요하다. 양자화 모델이나 LoRA adapter 디렉터리를 지정하지 않는다. ERA/DeepStack gate 등 추가 학습 파라미터도 제작자가 최종 가중치에 병합해야 한다.
+- 기본 모델은 준비 과정에서 고정 revision을 받는다. 학습 모델은 `config.json`, `model*.safetensors`, shard index, tokenizer·processor가 들어 있는 **Qwen3-VL-4B BF16 전체 병합 체크포인트**를 준비한다. ERA/DeepStack gate 등 추가 학습 파라미터도 최종 가중치에 병합한다.
 - 처음 한 번 모델·데이터를 받을 인터넷과 수십 GB 이상의 디스크 여유. 공식 4B 모델 캐시 약 8.3GB, Judge 약 16GB, MMMU 원본 약 3.5GB에 별도 학습 모델·Arrow 캐시·Python 환경 공간이 추가된다.
 
 **모델 가중치는 이 Git 브랜치에 없다.** 새 모델 제작자에게 전체 `merged/` 폴더 또는 그 압축을 받아 아래 경로에 먼저 풀어 둔다. 정확한 DPO2-E 가중치를 다시 평가하려면 `DPO2E_repro_merged.zip`을 별도로 받아야 하며, 기존 압축 SHA256은 다음과 같다.
@@ -30,7 +30,7 @@ git clone --branch mmdl-test-main --single-branch \
   https://github.com/wlsdn66597/MMDL.git MMDL
 ```
 
-모델을 다음 위치에 넣는다. 예시 이름 `era_plus`는 받은 모델에 맞게 바꿔도 된다.
+학습 모델을 평가한다면 다음 위치에 넣는다. 예시 이름 `era_plus`는 받은 모델에 맞게 바꿔도 된다.
 
 ```text
 호스트:   ~/shared_dir/models/era_plus/merged/config.json
@@ -55,9 +55,20 @@ bash ~/docker/run.sh bash -c '
 
 마지막에 `PASS records-check`와 `Ready:`가 나오는지 확인한다. 해시나 버전이 다르면 그대로 평가를 시작하지 않는다.
 
-## 3. 새 모델 평가 시작 — 호스트 터미널
+## 3. 기본 모델과 학습 모델 평가
 
-**모델 경로와 실행 이름**을 정한다. 아래 예시에서는 `era_plus_test_seed42`를 쓴다. 모델이 바뀔 때마다 새 이름을 사용한다. 생성 seed 기본값은 **42**이며, 세 번째 인자로 바꿀 수 있다. Judge seed는 **3407**이다.
+컨테이너 안의 `src/eval/mmmu_test/`에서 실행한다. 첫 번째 인자에 `baseline`을 주면 고정 공식 모델을 선택하고, 병합 폴더 경로를 주면 그 모델을 평가한다. 두 번째 인자는 실행 이름이고, 세 번째는 생성 seed다. 생성 seed 기본값은 **42**, Judge seed는 **3407**이다.
+
+```bash
+# 기본 모델과 DPO2-E를 같은 생성 seed로 비교
+bash scripts/run_test.sh baseline base_test_seed3407 3407
+bash scripts/run_test.sh /absolute/path/to/dpo2-e/merged dpo2e_repro_test_seed3407 3407
+
+# DPO2F-CD도 같은 실행기에 경로를 넘긴다
+bash scripts/run_test.sh /absolute/path/to/dpo2f-cd/merged dpo2f_cd_test_seed3407 3407
+```
+
+모델이나 생성 seed를 바꾸면 새 실행 이름을 사용한다. 실습실 호스트에서는 다음 예처럼 실행한다.
 
 ```bash
 nohup bash "$HOME/docker/run.sh" bash -c '
@@ -66,12 +77,6 @@ nohup bash "$HOME/docker/run.sh" bash -c '
     /shared_dir/models/era_plus/merged \
     era_plus_test_seed42
 ' </dev/null >> "$HOME/shared_dir/MMDL/src/eval/mmmu_test/era_plus_test_seed42.launch.log" 2>&1 &
-```
-
-같은 생성 seed 3407 비교는 다음 명령으로 시작한다. 기본 모델 평가에도 고정 공식 모델의 스냅샷 경로를 같은 위치에 전달한다.
-
-```bash
-bash scripts/run_test.sh /absolute/path/to/merged trained_test_seed3407 3407
 ```
 
 처음에 가중치 해시를 계산한 뒤 `Protocol verified: ... generation seed=<선택한 값>, judge seed=3407`이 나온다. 이어서 생성 → Qwen3-8B 보조 채점 → 원본 채점 → 요약 → 10,500개 ID·독립 재채점 검증 순으로 실행한다. 한 GPU에서는 평가 한 개씩 실행한다.
@@ -113,7 +118,7 @@ docker ps --format 'table {{.Names}}\t{{.Status}}'
 docker stop -t 30 gpu-cuda
 ```
 
-정상 완료 기준은 **응답·최종 채점 각각 고유 ID 10,500개, 누락·중복·재채점 불일치 0개**이다. 단순 줄 수나 `summary.txt` 존재만으로 완료를 판단하지 않는다. `verification.json`이 마지막 단계에서 생성된다.
+정상 완료 기준은 `verification.json`의 **`status: PASS`, 응답·최종 채점 각각 고유 ID 10,500개, 누락·중복·재채점 불일치 0개**다.
 
 친구가 돌려준 결과는 다음처럼 묶어서 전달한다. `records`, 원본 응답, Judge 결과, 코드·가중치·실행 환경 해시를 함께 받아야 비교를 검증할 수 있다. 이미지 캐시·모델 가중치는 결과 압축에 넣지 않는다.
 
@@ -146,7 +151,7 @@ nohup bash scripts/run_test.sh /absolute/path/to/merged era_plus_test_seed42 \
 
 전체 설정은 [PROTOCOL.md](PROTOCOL.md), 고정 파일 해시는 [protocol_reference.json](protocol_reference.json)에 있다. `eval_settings.json`에 남은 validation/900·동시 처리 1·이미지 5 값은 원본 템플릿이다. 문항 생성과 실행 인자로 **test/10,500·동시 처리 16·이미지 최대 7·선택한 생성 seed**가 실제 적용된다. 설정 JSON 전체의 seed를 42로 일괄 변경하지 않는다.
 
-기존 DPO2-E seed 3407 결과는 **6,918/10,500 = 65.89%**이다. seed 42 또는 새 모델 결과는 실행 완료 후 비교한다. 이 점수는 팀의 **제공된 로컬 채점기 기준**이며 공식 서버 제출 점수가 아니다. 같은 방법·seed라도 비동기 배치, GPU, 드라이버 등에 따라 응답이 완전히 같다고 보장할 수 없다. 가능한 한 같은 GPU와 고정 환경을 사용하고, 다른 환경이면 결과와 함께 명시한다.
+기존 생성 seed `3407` 결과는 기본 모델 **61.61%**, DPO2-E **65.89%**, DPO2F-CD **65.04%**다. 점수는 팀의 로컬 채점기 기준이다. 같은 방법·seed라도 비동기 배치, GPU·드라이버에 따라 응답이 달라질 수 있으므로 결과와 함께 실행 환경을 남긴다.
 
 이 브랜치에는 모델 가중치, 데이터 원문·정답, 학습 데이터, 실제 응답, 계정 정보가 포함되지 않는다. 데이터는 고정 Hugging Face revision에서 준비한다. `scripts/diag/`와 원본 실행기의 채점 규칙은 현재 실행과의 비교를 위해 수정하지 않았다.
 
