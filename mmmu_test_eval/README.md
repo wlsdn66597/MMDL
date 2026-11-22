@@ -1,5 +1,7 @@
 # Baseline Qwen3-VL-4B-Instruct · MMMU Test 평가
 
+이 브랜치는 공식 Baseline을 **MMMU Test 10,500문항으로 평가한 코드**다. 기존 완료 실행은 생성 seed **3407**, 정답 **6,469/10,500 (61.61%)**였다. 기존 조건 재실행은 `bash scripts/run_test.sh 3407 base_test`를 사용한다. seed 42는 별도 실행이며, 제공된 기존 seed 42 파일은 5,038문항으로 미완료였다.
+
 브랜치: `baseline_MMMu_test` · 용도: **MMMU Test 10,500문항 평가**
 
 공식 기본 모델 Qwen/Qwen3-VL-4B-Instruct의 고정 revision을 평가한다. 별도 병합 모델 경로를 받지 않는다.
@@ -23,7 +25,7 @@
 
 ## 1. 일반 Linux GPU 환경에서 준비
 
-Python **3.12**, BF16을 지원하는 NVIDIA GPU가 필요하다. 실제 평가 환경은 RTX 4090 24GB 한 장, vLLM 0.11.0, torch 2.8.0, transformers 4.57.0이었다. 모델·Judge·데이터·가상환경을 위한 수십 GB의 여유 공간이 필요하다.
+Python **3.12**, BF16을 지원하는 NVIDIA GPU와 `flock`(util-linux)이 있는 Linux 환경이 필요하다. 실제 평가 환경은 RTX 4090 24GB 한 장, vLLM 0.11.0, torch 2.8.0, transformers 4.57.0이었다. 모델·Judge·데이터·가상환경을 위한 수십 GB의 여유 공간이 필요하다.
 
 이 브랜치를 받은 뒤 `mmmu_test_eval/` 안에서 실행한다.
 
