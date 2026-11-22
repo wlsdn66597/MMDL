@@ -1,5 +1,7 @@
 # DPO2-E 재현 병합 모델 · MMMU Test 평가
 
+이 브랜치는 학습한 DPO-E(DPO2-E 재현 병합 모델)를 **MMMU Test 10,500문항으로 평가한 코드**다. 기존 완료 실행은 생성 seed **3407: 6,918/10,500 (65.89%)**, **42: 6,929/10,500 (65.99%)**였다. Baseline과의 같은 seed 비교는 **3407**을 사용한다.
+
 브랜치: `dpo-e_MMMu_test` · 용도: **MMMU Test 10,500문항 평가**
 
 기존 MMMU Test 평가에 사용한 DPO2-E 재현 모델처럼, Qwen3-VL-4B 계열의 전체 병합 체크포인트를 평가한다.
@@ -23,7 +25,7 @@
 
 ## 1. 일반 Linux GPU 환경에서 준비
 
-Python **3.12**, BF16을 지원하는 NVIDIA GPU가 필요하다. 실제 평가 환경은 RTX 4090 24GB 한 장, vLLM 0.11.0, torch 2.8.0, transformers 4.57.0이었다. 모델·Judge·데이터·가상환경을 위한 수십 GB의 여유 공간이 필요하다.
+Python **3.12**, BF16을 지원하는 NVIDIA GPU와 `flock`(util-linux)이 있는 Linux 환경이 필요하다. 실제 평가 환경은 RTX 4090 24GB 한 장, vLLM 0.11.0, torch 2.8.0, transformers 4.57.0이었다. 모델·Judge·데이터·가상환경을 위한 수십 GB의 여유 공간이 필요하다.
 
 이 브랜치를 받은 뒤 `mmmu_test_eval/` 안에서 실행한다.
 

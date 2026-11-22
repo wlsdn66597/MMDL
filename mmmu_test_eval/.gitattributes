@@ -1,0 +1,19 @@
+*.py text eol=lf
+*.sh text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+
+# Preserve exact SHA256 of the nine archived source files, including original line endings.
+/env/requirements_eval.txt -text
+/eval_settings.json -text
+/scripts/build_records.py -text
+/scripts/diag/common.py -text
+/scripts/diag/grade.py -text
+/scripts/diag/judge.py -text
+/scripts/diag/run_generate.py -text
+/scripts/download.py -text
+/scripts/run_eval_dpo2e.sh -text
+
+/.gitattributes text eol=lf
+/.gitignore text eol=lf
