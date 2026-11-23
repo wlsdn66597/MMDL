@@ -38,6 +38,16 @@ Qwen3-VL-4B-Instruct가 MMMU에서 같은 문장을 반복하다 답을 내지 �
 
 ## 2. 방법
 
+### Method Overview
+
+![DPO-ERA에서 학습하는 부분: ① language model decoder 36층의 LoRA, ② vision-language connector(DeepStack merger 3개, patch merger)의 LoRA와 scalar gate. ViT는 고정](docs/figures/method_overview.png)
+
+Qwen3-VL-4B-Instruct의 구조는 그대로 두고 두 부분만 학습한다. 시각 인코더(ViT)는 고정한다.
+
+- **① Main · Loop-Segment DPO:** language model(decoder 36층)의 attention(q·k·v·o)과 MLP(gate·up·down)에 LoRA를 달아 학습한다 [18]. 루프 쌍 326개로 DPO를 학습하며, 같은 문항의 정답 응답은 선호하고 루프 응답은 루프 시작 후 512 tokens 구간만 비선호로 계산해 루프 생성 확률을 낮춘다.
+- **② Auxiliary:** 시각 특징이 language model로 전달되는 connector(patch merger, DeepStack merger 3개)에 LoRA와 DeepStack gate g = 1 + tanh(w)를 달아, 이미지 특징을 전달하는 세기를 함께 학습한다 [16]. 데이터로는 ERA 형식 정답 풀이 선호 703쌍과 기존 정답 보존용 300개를 더한다.
+- 학습이 끝나면 LoRA와 gate를 원래 가중치에 합쳐서(gate는 fc2에 흡수), 평가 모델 구조는 베이스라인과 같다.
+
 ### ① Main · Loop-Segment DPO
 같은 문항에서 모델이 쓴 **정상 종료 정답(y⁺)은 선호**하고, **루프 응답(y⁻)은 루프가 시작된 뒤 512 tokens만 비선호**로 학습한다. 루프 앞의 정상 풀이는 문맥으로만 들어가고 손실에서는 빠진다. 정답 확률이 같이 떨어지지 않도록 정답 NLL을 더한다 [9, 13, 14].
 
@@ -141,11 +151,11 @@ MMMU val 900 · 학습 seed 3407. 각 변형은 해당 요소만 바꾸고 나�
 | (c) Main only | 루프 쌍 × 4 + NLL만 (ERA 쌍 · 이미지 손실 · connector · replay 제거) | 67.22% | 4 | 294.0 | 68.51% |
 | Baseline | 학습 없음 | 64.00% | 81 | 277 | 71.01% |
 
-- **(a) Prefix scoring:** 정확도는 비슷했지만 응답 길이 중앙값이 224.5 → 200.5로 가장 짧았다. 루프 앞의 정상 풀이까지 비선호로 학습하면 풀이가 짧아지는 경향을 보였다.
-- **(b) − Visual components:** −1.45%p(−13문항)로 변형 중 가장 크게 떨어졌지만, 900문항 평가의 표준오차(약 ±14문항) 안이다. 학습 후 gate 값이 ≈ 1로 남은 것과 함께 보면, 시각 연결부 학습의 기여는 확인되지 않았다.
-- **(c) Main only:** 루프 쌍과 NLL만으로 67.22%가 나왔다. 베이스라인 대비 향상(+3.56%p) 중 +3.22%p로, 대부분이 Loop-Segment DPO에서 나왔다. 보조 요소를 더하면 정확도는 +0.34%p 늘었고, 잘림은 4 → 1, 응답 길이는 294 → 224.5로 줄었다.
+- **(a) Prefix scoring:** 정확도는 비슷했지만 응답 길이 중앙값이 224.5 → 200.5로 가장 짧았다.
+- **(b) − Visual components:** −1.45%p로 오차 범위 [21] 안이었다. 학습 후 gate 값이 ≈ 1로 남은 것과 같은 결과로, 시각 연결부 학습의 기여는 확인되지 않았다.
+- **(c) Main only:** loop 쌍과 NLL만으로 67.22%가 나왔다. 베이스라인 대비 향상(+3.56%p) 중 +3.22%p로, 대부분이 Loop-Segment DPO에서 나왔다. 보조 요소를 더하면 정확도는 +0.34%p 늘었고, 잘림은 4 → 1, 응답 길이는 294 → 224.5로 줄었다.
 
-성능 향상의 핵심은 Loop-Segment DPO이고, 보조 요소는 성능을 해치지 않으면서 응답을 짧고 안정적으로 만드는 정도로 해석한다. 변형은 한 번씩만 학습했고, 같은 seed로 다시 학습해도 결과가 ±6문항 정도 흔들리므로 작은 차이는 단정하지 않는다.
+→ 성능 향상의 핵심은 Loop-Segment DPO이고, 보조 요소는 성능을 해치지 않으면서 응답을 짧고 안정적으로 만드는 정도로 해석한다.
 
 ## 6. 실패 분석
 
@@ -219,6 +229,7 @@ bash scripts/run_test.sh /path/to/merged trained_test_seed3407 3407
 | [`src/eval/mmmu_validation/`](src/eval/mmmu_validation/README.md) | MMMU val 900문항 평가 |
 | [`src/eval/mmmu_test/`](src/eval/mmmu_test/README.md) | MMMU test 10,500문항 평가 |
 | [`src/eval/mmmu_pro_std10/`](src/eval/mmmu_pro_std10/README.md) | MMMU-Pro 10지선다 1,730문항 평가 |
+| [`docs/figures/`](docs/figures/) | README 그림 (Method Overview) |
 | [`reports/`](reports/) | 실행별 점수, 과목별 비교, 학습 로그, 문항별 결과 |
 | [`assignment/`](assignment/) | 제출용 베이스라인 보고서 |
 
@@ -243,5 +254,6 @@ bash scripts/run_test.sh /path/to/merged trained_test_seed3407 3407
 18. Hu et al. LoRA: Low-Rank Adaptation of Large Language Models. ICLR 2022.
 19. Dao. FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning. ICLR 2024.
 20. Yue et al. MMMU-Pro: A More Robust Multi-discipline Multimodal Understanding Benchmark. ACL 2025.
+21. Madaan et al. Quantifying Variance in Evaluation Benchmarks. arXiv 2024.
 
 코드 출처와 라이선스: [THIRD_PARTY_LICENSES.txt](THIRD_PARTY_LICENSES.txt)
