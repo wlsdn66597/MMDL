@@ -1,6 +1,6 @@
 # 공통 MMMU Test 평가 조건
 
-AIX-408-06에서 기본 모델과 DPO2-E를 평가한 공통 프롬프트·생성·채점 조건을 사용한다. 기본 모델과 외부에서 받은 병합 모델은 하나의 실행기에서 선택한다.
+AIX-408-06에서 기본 모델과 DPO-ERA를 평가한 공통 프롬프트·생성·채점 조건을 사용한다. 기본 모델과 외부에서 받은 병합 모델은 하나의 실행기에서 선택한다.
 
 | 항목 | 실제 적용 값 |
 |---|---|
@@ -53,8 +53,8 @@ hint가 있으면 원본 템플릿에 따라 포함한다. 질문과 선택지�
 
 ## 파일 출처
 
-`eval_settings.json`, `env/requirements_eval.txt`, `scripts/build_records.py`, `scripts/download.py`, `scripts/diag/*.py`는 기존 408-06 Test baseline 평가 묶음에서 복사했다. `scripts/run_eval_dpo2e.sh`는 DPO2-E 실행에 쓰인 원본이며, baseline 실행기의 옵션 앞 누락된 공백 하나를 고친 버전이다. 파일별 SHA256은 `protocol_reference.json`에 기록했다. 원본 주석에 val/진단용이라고 적힌 부분은 파일 보존을 위해 그대로 두었으며, 실제 Test 설정은 위 표와 생성된 records가 정한다.
+`eval_settings.json`, `env/requirements_eval.txt`, `scripts/build_records.py`, `scripts/download.py`, `scripts/diag/*.py`는 기존 408-06 Test baseline 평가 묶음에서 복사했다. `scripts/run_eval_dpo2e.sh`는 DPO-ERA 실행에 쓰인 원본이며, baseline 실행기의 옵션 앞 누락된 공백 하나를 고친 버전이다. 파일별 SHA256은 `protocol_reference.json`에 기록했다. 원본 주석에 val/진단용이라고 적힌 부분은 파일 보존을 위해 그대로 두었으며, 실제 Test 설정은 위 표와 생성된 records가 정한다.
 
 추가한 prepare_test.sh, cache_test.py, run_test.sh, protocol.py는 배포·검증용이다. 생성 및 채점 로직을 교체하지 않는다. 기존 저장소의 제3자 코드 출처는 [THIRD_PARTY_LICENSES.txt](../../../THIRD_PARTY_LICENSES.txt)를 따른다. 모델과 데이터의 이용 조건은 각 배포처를 따른다.
 
-모델 선택과 완료 검증은 팀원의 [기본 모델 평가](https://github.com/wlsdn66597/MMDL/tree/e4783a6f0fc8ee668807eda6baf18325ad8661d0/mmmu_test_eval) 및 [DPO2-E 평가](https://github.com/wlsdn66597/MMDL/tree/9dbedf1196e112741138e0c9eb4ac7298d66b529/mmmu_test_eval)를 공통 실행기로 통합했다.
+모델 선택과 완료 검증은 팀원의 [기본 모델 평가](https://github.com/wlsdn66597/MMDL/tree/e4783a6f0fc8ee668807eda6baf18325ad8661d0/mmmu_test_eval) 및 [DPO-ERA 평가](https://github.com/wlsdn66597/MMDL/tree/9dbedf1196e112741138e0c9eb4ac7298d66b529/mmmu_test_eval)를 공통 실행기로 통합했다.

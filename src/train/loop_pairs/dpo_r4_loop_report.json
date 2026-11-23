@@ -1,0 +1,90 @@
+{
+ "math_items_available": 312,
+ "math_items_kept": 312,
+ "nonmath_items": 54,
+ "dropped_math": {
+  "버리는 풀이 없음": 563,
+  "고르는 풀이 없음": 1314,
+  "잘렸지만 루프 아님": 260,
+  "loop: 정답 횟수 부족": 214,
+  "loop: 길이 초과": 76
+ },
+ "dropped_nonmath": {
+  "고르는 풀이 없음": 831,
+  "버리는 풀이 없음": 910,
+  "loop: 정답 횟수 부족": 11,
+  "잘렸지만 루프 아님": 1
+ },
+ "train_items": 326,
+ "train_pairs": 326,
+ "val_items": 40,
+ "val_pairs": 40,
+ "train_pairs_by_type": {
+  "loop": 326
+ },
+ "train_pairs_by_bank_type": {
+  "math:loop": 277,
+  "nonmath:loop": 49
+ },
+ "train_pairs_by_source": {
+  "MMR1": 153,
+  "medx_mc": 20,
+  "BMMR": 26,
+  "FineVision-geometry3k(mathv360k)": 40,
+  "music_mc": 4,
+  "WaltonColdStart": 30,
+  "FineVision-visualwebinstruct(filtered)": 13,
+  "arxiv:physics": 4,
+  "bank2_mc": 3,
+  "LLaVA-CoT": 7,
+  "arxiv:q-fin": 2,
+  "wikiart_mc": 7,
+  "mmopenr1-8k": 4,
+  "Euclid30K": 2,
+  "arxiv:cs": 7,
+  "ViRL39K": 2,
+  "arxiv:eess": 1,
+  "arxiv:q-bio": 1
+ },
+ "train_items_by_pass_count": {
+  "4": 66,
+  "3": 66,
+  "6": 36,
+  "7": 26,
+  "5": 47,
+  "2": 85
+ },
+ "chosen_tokens": {
+  "median": 1663,
+  "p90": 4557,
+  "max": 6962
+ },
+ "wrong_rejected_tokens": null,
+ "loop_start_tokens": {
+  "median": 3470,
+  "p90": 5755,
+  "n": 326
+ },
+ "train_pairs_by_pass_count": {
+  "2": 85,
+  "5": 47,
+  "6": 36,
+  "3": 66,
+  "4": 66,
+  "7": 26
+ },
+ "settings": {
+  "min_tok": 50,
+  "cap_math_source": 100000,
+  "seed": 3407,
+  "seg": 512,
+  "only_loop": true,
+  "loop_pick": "best",
+  "extra_math": [
+   "/home/jinu/mmdl/train_runs/bank_sampling_r2_n8/samples.jsonl"
+  ],
+  "min_pass_wrong": 3,
+  "min_pass_loop": 2,
+  "max_tokens": 8192
+ }
+}

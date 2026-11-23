@@ -63,4 +63,4 @@ NAME=mmmu-pro-base ./run.sh bash -c '
 
 출력은 `src/eval/mmmu_pro_std10/outputs/`의 `base_eval` 또는 `finetuned_trained_model_eval` 폴더에 저장된다. `summary.txt`에서 1,730문항 채점 결과를 확인한다. 문항별 비교에는 `records.json`, `predictions.jsonl`, `graded.jsonl`, `judge.jsonl`을 사용한다. `runtime.json`은 실행 시의 패키지 버전, GPU·드라이버와 코드 해시를 담고, 학습 모델 실행의 `checkpoint.json`은 가중치 해시를 담는다.
 
-[기본 모델과 DPO2-E 결과 비교](../../../reports/mmmu_pro_std10/comparison.md)
+[기본 모델과 DPO-ERA 결과 비교](../../../reports/mmmu_pro_std10/comparison.md)
