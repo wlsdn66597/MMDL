@@ -1,6 +1,6 @@
 # MMMU Test 10,500문항 평가
 
-**MMMU Test 10,500문항**에서 기본 모델과 DPO2-E·DPO2F-CD 같은 병합 모델을 같은 코드로 평가한다. 같은 조건으로 비교할 때는 생성 seed `3407`을 명시한다. 저장된 점수는 [모델 비교 보고서](../../../reports/mmmu_test/comparison.md)에 있다.
+**MMMU Test 10,500문항**에서 기본 모델과 DPO-ERA 같은 병합 모델을 같은 코드로 평가한다. 같은 조건으로 비교할 때는 생성 seed `3407`을 명시한다. 저장된 점수는 [모델 비교 보고서](../../../reports/mmmu_test/comparison.md)에 있다.
 
 현재 서버에서 사용한 생성·채점 코드와 `run_eval_dpo2e.sh`를 원본 바이트 그대로 보존했다. 설치, 파일 검증, 실행 기록, 완료 검증만 바깥에 추가했다. 저장소의 `src/eval/mmmu_validation/evaluate.py`는 기존 **validation 900문항** 평가이므로 이번 Test 실행에는 사용하지 않는다.
 
@@ -10,13 +10,13 @@
 - 기본 모델은 준비 과정에서 고정 revision을 받는다. 학습 모델은 `config.json`, `model*.safetensors`, shard index, tokenizer·processor가 들어 있는 **Qwen3-VL-4B BF16 전체 병합 체크포인트**를 준비한다. ERA/DeepStack gate 등 추가 학습 파라미터도 최종 가중치에 병합한다.
 - 처음 한 번 모델·데이터를 받을 인터넷과 수십 GB 이상의 디스크 여유. 공식 4B 모델 캐시 약 8.3GB, Judge 약 16GB, MMMU 원본 약 3.5GB에 별도 학습 모델·Arrow 캐시·Python 환경 공간이 추가된다.
 
-**모델 가중치는 이 Git 브랜치에 없다.** 새 모델 제작자에게 전체 `merged/` 폴더 또는 그 압축을 받아 아래 경로에 먼저 풀어 둔다. 정확한 DPO2-E 가중치를 다시 평가하려면 `DPO2E_repro_merged.zip`을 별도로 받아야 하며, 기존 압축 SHA256은 다음과 같다.
+**모델 가중치는 이 Git 브랜치에 없다.** 새 모델 제작자에게 전체 `merged/` 폴더 또는 그 압축을 받아 아래 경로에 먼저 풀어 둔다. 정확한 DPO-ERA 가중치를 다시 평가하려면 `DPO2E_repro_merged.zip`을 별도로 받아야 하며, 기존 압축 SHA256은 다음과 같다.
 
 ```text
 0f1fd00162da1519a6596d6c7ee5b01079cf7a4d3c7ff2bb33c4a1546657bf3d
 ```
 
-새 ERA 모델은 이 DPO2-E 압축과 다른 파일이므로 이 해시와 일치할 필요가 없다. 실행 시 실제 가중치 전체의 SHA256을 별도로 기록한다.
+새 ERA 모델은 이 DPO-ERA 압축과 다른 파일이므로 이 해시와 일치할 필요가 없다. 실행 시 실제 가중치 전체의 SHA256을 별도로 기록한다.
 
 ## 2. 학교 GPU 서버에서 준비하기
 
@@ -60,12 +60,10 @@ bash ~/docker/run.sh bash -c '
 컨테이너 안의 `src/eval/mmmu_test/`에서 실행한다. 첫 번째 인자에 `baseline`을 주면 고정 공식 모델을 선택하고, 병합 폴더 경로를 주면 그 모델을 평가한다. 두 번째 인자는 실행 이름이고, 세 번째는 생성 seed다. 생성 seed 기본값은 **42**, Judge seed는 **3407**이다.
 
 ```bash
-# 기본 모델과 DPO2-E를 같은 생성 seed로 비교
+# 기본 모델과 DPO-ERA를 같은 생성 seed로 비교
 bash scripts/run_test.sh baseline base_test_seed3407 3407
-bash scripts/run_test.sh /absolute/path/to/dpo2-e/merged dpo2e_repro_test_seed3407 3407
+bash scripts/run_test.sh /absolute/path/to/dpo-era/merged dpo2e_repro_test_seed3407 3407
 
-# DPO2F-CD도 같은 실행기에 경로를 넘긴다
-bash scripts/run_test.sh /absolute/path/to/dpo2f-cd/merged dpo2f_cd_test_seed3407 3407
 ```
 
 모델이나 생성 seed를 바꾸면 새 실행 이름을 사용한다. 실습실 호스트에서는 다음 예처럼 실행한다.
@@ -83,7 +81,7 @@ nohup bash "$HOME/docker/run.sh" bash -c '
 
 학교 시스템이 같은 컨테이너를 중단했다가 `docker start`로 재시작하면 위 명령이 다시 실행되고 이미 저장된 응답 ID를 건너뛴다. 모델·환경이 같아야 재개를 허용한다. 컨테이너가 내려가 있고 자동으로 돌아오지 않으면 위 명령을 다시 실행한다.
 
-### 현재 DPO2-E seed 42 실행과 같은 모델을 쓰는 예
+### 현재 DPO-ERA seed 42 실행과 같은 모델을 쓰는 예
 
 이전 서버에 이미 있는 모델 위치를 쓰려면 실행 인자는 다음과 같다. 친구 서버에서는 실제로 전달받아 풀어 놓은 컨테이너 경로로 바꾼다.
 
@@ -151,8 +149,8 @@ nohup bash scripts/run_test.sh /absolute/path/to/merged era_plus_test_seed42 \
 
 전체 설정은 [PROTOCOL.md](PROTOCOL.md), 고정 파일 해시는 [protocol_reference.json](protocol_reference.json)에 있다. `eval_settings.json`에 남은 validation/900·동시 처리 1·이미지 5 값은 원본 템플릿이다. 문항 생성과 실행 인자로 **test/10,500·동시 처리 16·이미지 최대 7·선택한 생성 seed**가 실제 적용된다. 설정 JSON 전체의 seed를 42로 일괄 변경하지 않는다.
 
-기존 생성 seed `3407` 결과는 기본 모델 **61.61%**, DPO2-E **65.89%**, DPO2F-CD **65.04%**다. 점수는 팀의 로컬 채점기 기준이다. 같은 방법·seed라도 비동기 배치, GPU·드라이버에 따라 응답이 달라질 수 있으므로 결과와 함께 실행 환경을 남긴다.
+기존 생성 seed `3407` 결과는 기본 모델 **61.61%**, DPO-ERA **65.89%**다. 점수는 팀의 로컬 채점기 기준이다. 같은 방법·seed라도 비동기 배치, GPU·드라이버에 따라 응답이 달라질 수 있으므로 결과와 함께 실행 환경을 남긴다.
 
 이 브랜치에는 모델 가중치, 데이터 원문·정답, 학습 데이터, 실제 응답, 계정 정보가 포함되지 않는다. 데이터는 고정 Hugging Face revision에서 준비한다. `scripts/diag/`와 원본 실행기의 채점 규칙은 현재 실행과의 비교를 위해 수정하지 않았다.
 
-[기본 모델·DPO2-E·DPO2F-CD 결과 비교](../../../reports/mmmu_test/comparison.md)
+[기본 모델·DPO-ERA 결과 비교](../../../reports/mmmu_test/comparison.md)

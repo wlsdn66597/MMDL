@@ -11,5 +11,4 @@ python3.12 src/eval/mmmu_validation/prepare.py
 
 학습한 모델에는 `--checkpoint /absolute/path/to/merged`를 추가하고 새 `--run-name`을 지정한다. 같은 실행을 재개할 때는 이전 명령과 이름을 사용한다. 이동 전 평가를 시작했다면 기록한 코드 해시와 일치하도록 당시 커밋에서 이어서 실행한다.
 
-- [제출용 베이스라인 보고서](../../../assignment/mmmu_baseline.md)
-- [ERA SFT epoch별 결과](../../../reports/mmmu.md)
+- [제출용 베이스라인 보고서](../../../assignment/assignment1.md)
